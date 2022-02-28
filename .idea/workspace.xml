@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8f90f283-fcfa-4ba6-ac14-552c901273ed" name="Default" comment="" />
+    <list default="true" id="8f90f283-fcfa-4ba6-ac14-552c901273ed" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Modulo2Matrix.java" afterPath="$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Modulo2Matrix.java" />
+    </list>
     <ignored path="$PROJECT_DIR$/.gradle/" />
     <ignored path="$PROJECT_DIR$/build/" />
     <ignored path="$PROJECT_DIR$/authentication-app/.gradle/" />
@@ -50,15 +52,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Modulo2Matrix.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Modulo2Matrix.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Modulo2Matrix.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="11" column="40" lean-forward="false" selection-start-line="11" selection-start-column="40" selection-end-line="11" selection-end-column="40" />
+            <state relative-caret-position="227">
+              <caret line="242" column="28" lean-forward="false" selection-start-line="242" selection-start-column="28" selection-end-line="242" selection-end-column="28" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#4407#4408#0" expanded="true" />
-                <element signature="e#4441#4442#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -136,11 +136,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="LUDecomposition.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="LUDecomposition.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/LUDecomposition.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="165">
-              <caret line="11" column="0" lean-forward="true" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+              <caret line="11" column="0" lean-forward="false" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -197,6 +197,9 @@
       <replace>int</replace>
       <replace>Integer</replace>
     </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GradleExtensions">
     <project path="$PROJECT_DIR$">
@@ -1351,8 +1354,8 @@
         <option value="$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Matrix.java" />
         <option value="$PROJECT_DIR$/matrix/src/test/java/ru/zhuvikin/auth/matrix/MatrixLUDecompositionTest.java" />
         <option value="$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Element.java" />
-        <option value="$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Modulo2Matrix.java" />
         <option value="$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/LUDecomposition.java" />
+        <option value="$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Modulo2Matrix.java" />
       </list>
     </option>
   </component>
@@ -1370,6 +1373,7 @@
     <option name="width" value="1440" />
     <option name="height" value="878" />
   </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
       <flattenPackages />
@@ -1580,7 +1584,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.Tests in 'matrix_test'">
+  <component name="RunManager" selected="Gradle.MatrixLUDecompositionTest">
     <configuration default="false" name="Tests in 'matrix_test'" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -1619,25 +1623,6 @@
       </ExternalSystemSettings>
       <method />
     </configuration>
-    <configuration default="false" name="MatrixMultiplicationTest.testMultiplication4" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/matrix" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--tests &quot;ru.zhuvikin.auth.matrix.MatrixMultiplicationTest.testMultiplication4&quot;" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":matrix:cleanTest" />
-            <option value=":matrix:test" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <method />
-    </configuration>
     <configuration default="false" name="MatrixMultiplicationTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -1663,6 +1648,25 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$/matrix" />
         <option name="externalSystemIdString" value="GRADLE" />
         <option name="scriptParameters" value="--tests &quot;ru.zhuvikin.auth.matrix.MatrixMultiplicationTest.testMultiplication1&quot;" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":matrix:cleanTest" />
+            <option value=":matrix:test" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <method />
+    </configuration>
+    <configuration default="false" name="MatrixLUDecompositionTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/matrix" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="--tests ru.zhuvikin.auth.matrix.MatrixLUDecompositionTest" />
         <option name="taskDescriptions">
           <list />
         </option>
@@ -2185,17 +2189,17 @@
     <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Gradle.Tests in 'matrix_test'" />
       <item index="1" class="java.lang.String" itemvalue="Gradle.MatrixLUDecompositionTest.testDecomposition" />
-      <item index="2" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest.testMultiplication4" />
-      <item index="3" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest" />
-      <item index="4" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest.testMultiplication1" />
+      <item index="2" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest" />
+      <item index="3" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest.testMultiplication1" />
+      <item index="4" class="java.lang.String" itemvalue="Gradle.MatrixLUDecompositionTest" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Gradle.Tests in 'matrix_test'" />
-        <item index="1" class="java.lang.String" itemvalue="Gradle.MatrixLUDecompositionTest.testDecomposition" />
-        <item index="2" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest.testMultiplication1" />
-        <item index="3" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest" />
-        <item index="4" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest.testMultiplication4" />
+        <item index="0" class="java.lang.String" itemvalue="Gradle.MatrixLUDecompositionTest" />
+        <item index="1" class="java.lang.String" itemvalue="Gradle.Tests in 'matrix_test'" />
+        <item index="2" class="java.lang.String" itemvalue="Gradle.MatrixLUDecompositionTest.testDecomposition" />
+        <item index="3" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest.testMultiplication1" />
+        <item index="4" class="java.lang.String" itemvalue="Gradle.MatrixMultiplicationTest" />
       </list>
     </recent_temporary>
   </component>
@@ -2213,13 +2217,13 @@
       <workItem from="1512045248407" duration="403000" />
       <workItem from="1512045682946" duration="999000" />
       <workItem from="1512046716411" duration="32214000" />
-      <workItem from="1512087330715" duration="140000" />
+      <workItem from="1512087330715" duration="442000" />
     </task>
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="MatrixLUDecompositionTest_testDecomposition - 2017.12.01 at 03h 14m 47s.xml">
-      <configuration name="MatrixLUDecompositionTest.testDecomposition" configurationId="GradleRunConfiguration" />
+    <history-entry file="MatrixLUDecompositionTest - 2017.12.01 at 03h 21m 28s.xml">
+      <configuration name="MatrixLUDecompositionTest" configurationId="GradleRunConfiguration" />
     </history-entry>
     <history-entry file="MatrixMultiplicationTest - 2017.12.01 at 03h 04m 57s.xml">
       <configuration name="MatrixMultiplicationTest" configurationId="GradleRunConfiguration" />
@@ -2250,7 +2254,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="40203000" />
+    <option name="totallyTimeSpent" value="40505000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1440" height="878" extended-state="6" />
@@ -2275,7 +2279,7 @@
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="LiquibaseEJBModel" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.41857508" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3244275" sideWeight="0.59585124" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="LiquibaseModel" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -2338,8 +2342,6 @@
           <caret line="3" column="1" lean-forward="false" selection-start-line="3" selection-start-column="1" selection-end-line="3" selection-end-column="1" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4407#4408#0" expanded="true" />
-            <element signature="e#4441#4442#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2403,6 +2405,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2503,6 +2508,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
           <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2519,8 +2527,6 @@
           <caret line="2" column="13" lean-forward="false" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4407#4408#0" expanded="true" />
-            <element signature="e#4441#4442#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2537,6 +2543,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="569">
           <caret line="271" column="6" lean-forward="false" selection-start-line="271" selection-start-column="6" selection-end-line="271" selection-end-column="6" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2558,6 +2565,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
           <caret line="242" column="11" lean-forward="false" selection-start-line="242" selection-start-column="11" selection-end-line="242" selection-end-column="11" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2675,18 +2683,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Modulo2Matrix.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" column="40" lean-forward="false" selection-start-line="11" selection-start-column="40" selection-end-line="11" selection-end-column="40" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#4407#4408#0" expanded="true" />
-            <element signature="e#4441#4442#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/matrix/src/test/java/ru/zhuvikin/auth/matrix/MatrixAdditionTest.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
@@ -2694,14 +2690,6 @@
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Matrix.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="243">
-          <caret line="40" column="20" lean-forward="false" selection-start-line="40" selection-start-column="20" selection-end-line="40" selection-end-column="20" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2718,7 +2706,25 @@
     <entry file="file://$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/LUDecomposition.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
-          <caret line="11" column="0" lean-forward="true" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+          <caret line="11" column="0" lean-forward="false" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Matrix.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="243">
+          <caret line="40" column="20" lean-forward="false" selection-start-line="40" selection-start-column="20" selection-end-line="40" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/matrix/src/main/java/ru/zhuvikin/auth/matrix/Modulo2Matrix.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="227">
+          <caret line="242" column="28" lean-forward="false" selection-start-line="242" selection-start-column="28" selection-end-line="242" selection-end-column="28" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

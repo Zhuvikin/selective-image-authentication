@@ -228,16 +228,11 @@ public class Modulo2Matrix implements Matrix {
 
     @Override
     public LUDecomposition decompose() {
-        int M = getHeight();
-        int N = getWidth();
-        int K = N < M ? N : M;
+        int subMatrixDimension = width < height ? width : height;
 
-        Matrix left;
-        Matrix upper;
+        Matrix left = new Modulo2Matrix(subMatrixDimension, height);
+        Matrix upper = new Modulo2Matrix(width, subMatrixDimension);
         Matrix B = clone();
-
-        left = new Modulo2Matrix(K, M);
-        upper = new Modulo2Matrix(N, K);
 
         Element e = null, f, fn;
 
@@ -245,31 +240,26 @@ public class Modulo2Matrix implements Matrix {
 
         boolean found;
 
-        if (left.getHeight() != K || left.getWidth() != M ||
-                upper.getHeight() != K || upper.getWidth() != N) {
-            throw new RuntimeException("Matrices have incompatible dimensions");
-        }
+        int[] rinv = new int[height];
+        int[] cinv = new int[width];
 
-        int[] rinv = new int[M];
-        int[] cinv = new int[N];
+        int[] rows = new int[height];
+        int[] columns = new int[width];
 
-        int[] rows = new int[M];
-        int[] columns = new int[N];
-
-        for (i = 0; i < M; i++) {
+        for (i = 0; i < height; i++) {
             rinv[i] = i;
             rows[i] = i;
         }
 
-        for (j = 0; j < N; j++) {
+        for (j = 0; j < width; j++) {
             cinv[j] = j;
             columns[j] = j;
         }
 
 
-        for (i = 0; i < K; i++) {
+        for (i = 0; i < subMatrixDimension; i++) {
             found = false;
-            for (k = i; k < N; k++) {
+            for (k = i; k < width; k++) {
                 e = B.firstInColumn(columns[k]);
                 if (e != null) {
                     while (e.bottom() != null) {
@@ -339,7 +329,7 @@ public class Modulo2Matrix implements Matrix {
             }
         }
 
-        for (i = K; i < M; i++) {
+        for (i = subMatrixDimension; i < height; i++) {
             for (; ; ) {
                 f = left.firstInRow(rows[i]);
                 if (f == null || f.right() == null) {
