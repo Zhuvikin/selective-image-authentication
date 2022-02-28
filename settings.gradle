@@ -1,0 +1,5 @@
+rootProject.name = 'authentication'
+
+include 'application'
+include 'ldpc'
+include 'matrix'

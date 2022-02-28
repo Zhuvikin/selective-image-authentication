@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '2.0.1'
+}
+
+shadowJar {
+    baseName = 'selective-authentication'
+    classifier = null
+    version = null
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.16.18'
+
+    compile 'commons-cli:commons-cli:1.4'
+
+    compile project(':ldpc')
+}
+
+mainClassName = 'ru.zhuvikin.auth.app.SelectiveAuthentication'

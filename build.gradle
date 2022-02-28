@@ -1,0 +1,9 @@
+plugins {
+    id 'idea'
+}
+
+subprojects {
+    repositories {
+        jcenter()
+    }
+}

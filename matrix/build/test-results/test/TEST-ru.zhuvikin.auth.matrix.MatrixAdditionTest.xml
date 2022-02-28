@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.zhuvikin.auth.matrix.MatrixAdditionTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2017-12-01T00:17:26" hostname="MacBook-Pro-Zhuvikin.local" time="0.002">
+  <properties/>
+  <testcase name="testAddition1" classname="ru.zhuvikin.auth.matrix.MatrixAdditionTest" time="0.001"/>
+  <testcase name="testAddition2" classname="ru.zhuvikin.auth.matrix.MatrixAdditionTest" time="0.001"/>
+  <testcase name="testSubtraction" classname="ru.zhuvikin.auth.matrix.MatrixAdditionTest" time="0.0"/>
+  <system-out><![CDATA[testAddition1
+matrix1: Matrix(3, 3) :
+1 0 0 
+1 0 0 
+0 0 1 
+
+
+matrix2: Matrix(3, 3) :
+1 0 0 
+0 0 0 
+0 0 0 
+
+
+expected: Matrix(3, 3) :
+0 0 0 
+1 0 0 
+0 0 1 
+
+
+testAddition2
+matrix1: Matrix(2, 2) :
+1 0 
+0 0 
+
+
+matrix2: Matrix(2, 2) :
+0 0 
+0 1 
+
+
+expected: Matrix(2, 2) :
+1 0 
+0 1 
+
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
