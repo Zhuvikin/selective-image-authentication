@@ -14,8 +14,6 @@ public interface Matrix {
 
     boolean isSet(int column, int row);
 
-    Element get(int column, int row);
-
     Element firstInRow(int row);
 
     Element firstInColumn(int column);

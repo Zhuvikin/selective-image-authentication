@@ -71,14 +71,6 @@ public class Modulo2Matrix implements Matrix {
     }
 
     @Override
-    public Element get(int column, int row) {
-        if (isSet(column, row)) {
-            return columns.get(column).get(row);
-        }
-        return null;
-    }
-
-    @Override
     public Element firstInRow(int row) {
         if (!rows.containsKey(row)) {
             return null;
@@ -234,36 +226,32 @@ public class Modulo2Matrix implements Matrix {
         Matrix upper = new Modulo2Matrix(width, subMatrixDimension);
         Matrix B = clone();
 
-        Element e = null, f, fn;
-
-        int i, j, k;
-
-        boolean found;
-
-        int[] rinv = new int[height];
-        int[] cinv = new int[width];
+        Element e = null, first, next;
 
         int[] rows = new int[height];
         int[] columns = new int[width];
+        int[] rowsInv = new int[height];
+        int[] columnsInv = new int[width];
 
-        for (i = 0; i < height; i++) {
-            rinv[i] = i;
+        for (int i = 0; i < height; i++) {
+            rowsInv[i] = i;
             rows[i] = i;
         }
 
-        for (j = 0; j < width; j++) {
-            cinv[j] = j;
-            columns[j] = j;
+        for (int i = 0; i < width; i++) {
+            columnsInv[i] = i;
+            columns[i] = i;
         }
 
-
-        for (i = 0; i < subMatrixDimension; i++) {
+        int k;
+        boolean found;
+        for (int i = 0; i < subMatrixDimension; i++) {
             found = false;
             for (k = i; k < width; k++) {
                 e = B.firstInColumn(columns[k]);
                 if (e != null) {
                     while (e.bottom() != null) {
-                        if (rinv[e.getRow()] >= i) {
+                        if (rowsInv[e.getRow()] >= i) {
                             found = true;
                             break;
                         }
@@ -276,17 +264,17 @@ public class Modulo2Matrix implements Matrix {
             }
 
             if (found) {
-                if (cinv[e.getColumn()] != k) {
+                if (columnsInv[e.getColumn()] != k) {
                     throw new RuntimeException("Invalid result");
                 }
 
                 columns[k] = columns[i];
                 columns[i] = e.getColumn();
 
-                cinv[columns[k]] = k;
-                cinv[columns[i]] = i;
+                columnsInv[columns[k]] = k;
+                columnsInv[columns[i]] = i;
 
-                k = rinv[e.getRow()];
+                k = rowsInv[e.getRow()];
 
                 if (k < i) {
                     throw new RuntimeException("Invalid result: k(" + k + ") < i(" + i + ")");
@@ -295,47 +283,45 @@ public class Modulo2Matrix implements Matrix {
                 rows[k] = rows[i];
                 rows[i] = e.getRow();
 
-                rinv[rows[k]] = k;
-                rinv[rows[i]] = i;
+                rowsInv[rows[k]] = k;
+                rowsInv[rows[i]] = i;
             }
 
-            // Update L, U, and B
-            f = B.firstInColumn(columns[i]);
-            if (f != null) {
-                while (f.bottom() != null) {
-                    fn = f.bottom();
-                    k = f.getRow();
+            first = B.firstInColumn(columns[i]);
+            if (first != null) {
+                while (first.bottom() != null) {
+                    next = first.bottom();
+                    k = first.getRow();
 
-                    if (rinv[k] > i) {
+                    if (rowsInv[k] > i && e != null) {
                         B.addRow(k, B, e.getRow());
                         left.set(i, k);
-                    } else if (rinv[k] < i) {
-                        upper.set(columns[i], rinv[k]);
+                    } else if (rowsInv[k] < i) {
+                        upper.set(columns[i], rowsInv[k]);
                     } else {
                         left.set(i, k);
                         upper.set(columns[i], i);
                     }
-                    f = fn;
+                    first = next;
                 }
 
-                // Get rid of all entries in the current column of B, just to save space.
                 for (; ; ) {
-                    f = B.firstInColumn(columns[i]);
-                    if (f == null || f.bottom() == null) {
+                    first = B.firstInColumn(columns[i]);
+                    if (first == null || first.bottom() == null) {
                         break;
                     }
-                    f.remove();
+                    first.remove();
                 }
             }
         }
 
-        for (i = subMatrixDimension; i < height; i++) {
+        for (int i = subMatrixDimension; i < height; i++) {
             for (; ; ) {
-                f = left.firstInRow(rows[i]);
-                if (f == null || f.right() == null) {
+                first = left.firstInRow(rows[i]);
+                if (first == null || first.right() == null) {
                     break;
                 }
-                f.remove();
+                first.remove();
             }
         }
 
