@@ -1,11 +1,18 @@
-package ru.zhuvikin.auth.matrix;
+package ru.zhuvikin.auth.matrix.modulo2;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.zhuvikin.auth.matrix.Element;
+import ru.zhuvikin.auth.matrix.LUDecomposition;
+import ru.zhuvikin.auth.matrix.Matrix;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Getter
 @Setter
@@ -90,6 +97,30 @@ public class Modulo2Matrix implements Matrix {
         Map.Entry<Integer, Element> firstEntry = columns.get(column).firstEntry();
         if (firstEntry != null) {
             return firstEntry.getValue();
+        }
+        return null;
+    }
+
+    @Override
+    public Element lastInRow(int row) {
+        if (!rows.containsKey(row)) {
+            return null;
+        }
+        Map.Entry<Integer, Element> lastEntry = rows.get(row).lastEntry();
+        if (lastEntry != null) {
+            return lastEntry.getValue();
+        }
+        return null;
+    }
+
+    @Override
+    public Element lastInColumn(int column) {
+        if (!columns.containsKey(column)) {
+            return null;
+        }
+        Map.Entry<Integer, Element> lastEntry = columns.get(column).lastEntry();
+        if (lastEntry != null) {
+            return lastEntry.getValue();
         }
         return null;
     }
@@ -228,30 +259,21 @@ public class Modulo2Matrix implements Matrix {
 
         Element e = null, first, next;
 
-        int[] rows = new int[height];
-        int[] columns = new int[width];
-        int[] rowsInv = new int[height];
-        int[] columnsInv = new int[width];
+        List<Integer> rows = IntStream.range(0, height).boxed().collect(Collectors.toList());
+        List<Integer> columns = IntStream.range(0, width).boxed().collect(Collectors.toList());
 
-        for (int i = 0; i < height; i++) {
-            rowsInv[i] = i;
-            rows[i] = i;
-        }
-
-        for (int i = 0; i < width; i++) {
-            columnsInv[i] = i;
-            columns[i] = i;
-        }
+        List<Integer> rowsInv = new ArrayList<>(rows);
+        List<Integer> columnsInv = new ArrayList<>(columns);
 
         int k;
         boolean found;
         for (int i = 0; i < subMatrixDimension; i++) {
             found = false;
             for (k = i; k < width; k++) {
-                e = B.firstInColumn(columns[k]);
+                e = B.firstInColumn(columns.get(k));
                 if (e != null) {
                     while (e.bottom() != null) {
-                        if (rowsInv[e.getRow()] >= i) {
+                        if (rowsInv.get(e.getRow()) >= i) {
                             found = true;
                             break;
                         }
@@ -264,60 +286,52 @@ public class Modulo2Matrix implements Matrix {
             }
 
             if (found) {
-                if (columnsInv[e.getColumn()] != k) {
+                if (columnsInv.get(e.getColumn()) != k) {
                     throw new RuntimeException("Invalid result");
                 }
 
-                columns[k] = columns[i];
-                columns[i] = e.getColumn();
+                columns.set(k, columns.get(i));
+                columns.set(i, e.getColumn());
 
-                columnsInv[columns[k]] = k;
-                columnsInv[columns[i]] = i;
+                columnsInv.set(columns.get(k), k);
+                columnsInv.set(columns.get(i), i);
 
-                k = rowsInv[e.getRow()];
+                k = rowsInv.get(e.getRow());
 
                 if (k < i) {
                     throw new RuntimeException("Invalid result: k(" + k + ") < i(" + i + ")");
                 }
 
-                rows[k] = rows[i];
-                rows[i] = e.getRow();
+                rows.set(k, rows.get(i));
+                rows.set(i, e.getRow());
 
-                rowsInv[rows[k]] = k;
-                rowsInv[rows[i]] = i;
+                rowsInv.set(rows.get(k), k);
+                rowsInv.set(rows.get(i), i);
             }
 
-            first = B.firstInColumn(columns[i]);
+            first = B.firstInColumn(columns.get(i));
             if (first != null) {
                 while (first.bottom() != null) {
                     next = first.bottom();
                     k = first.getRow();
 
-                    if (rowsInv[k] > i && e != null) {
+                    if (rowsInv.get(k) > i && e != null) {
                         B.addRow(k, B, e.getRow());
                         left.set(i, k);
-                    } else if (rowsInv[k] < i) {
-                        upper.set(columns[i], rowsInv[k]);
+                    } else if (rowsInv.get(k) < i) {
+                        upper.set(columns.get(i), rowsInv.get(k));
                     } else {
                         left.set(i, k);
-                        upper.set(columns[i], i);
+                        upper.set(columns.get(i), i);
                     }
                     first = next;
-                }
-
-                for (; ; ) {
-                    first = B.firstInColumn(columns[i]);
-                    if (first == null || first.bottom() == null) {
-                        break;
-                    }
-                    first.remove();
                 }
             }
         }
 
         for (int i = subMatrixDimension; i < height; i++) {
             for (; ; ) {
-                first = left.firstInRow(rows[i]);
+                first = left.firstInRow(rows.get(i));
                 if (first == null || first.right() == null) {
                     break;
                 }
@@ -325,7 +339,7 @@ public class Modulo2Matrix implements Matrix {
             }
         }
 
-        return new LUDecomposition(left, upper);
+        return new LUDecomposition(width, height, rows, columns, left, upper);
     }
 
     private void setElement(int column, int row) {

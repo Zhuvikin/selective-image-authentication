@@ -18,6 +18,10 @@ public interface Matrix {
 
     Element firstInColumn(int column);
 
+    Element lastInRow(int row);
+
+    Element lastInColumn(int column);
+
     Matrix set(int column, int row);
 
     Matrix remove(int column, int row);

@@ -5,7 +5,5 @@ plugins {
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.16.18'
 
-    testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
     testCompile 'junit:junit:4.12'
-
 }
