@@ -124,6 +124,8 @@ public class LdpcEncoder implements Encoder {
         double changed;    // Double because can be fraction if lratio==1
 
         Matrix parityCheckMatrix = code.getParityCheckMatrix();
+        LUDecomposition generatorMatrix = code.getGeneratorMatrix();
+        List<Integer> columns = generatorMatrix.getColumns();
 
         // Find likelihood ratio for each bit
         for (int i = 0; i < N; i++) {
@@ -143,7 +145,13 @@ public class LdpcEncoder implements Encoder {
         changed = changed(lratio, dblk, N);
         System.out.println("Changed bits: " + changed);
 
-        return new BitSequence(N - M);
+        BitSequence bitSequence = new BitSequence(N - M);
+        for (int i = M; i < N; i++) {
+            if (dblk[columns.get(i)]) {
+                bitSequence.set(i - M);
+            }
+        }
+        return bitSequence;
     }
 
     private double changed(double[] lratio, // Likelihood ratios for bits
@@ -166,22 +174,18 @@ public class LdpcEncoder implements Encoder {
                                   double[] lratio,           // Likelihood ratios for bits
                                   boolean[] dblk,               // Place to store decoding
                                   double[] bprb) {           // Place to store bit probabilities)
-        int n;
-
         // Initialize probability and likelihood ratios, and find initial guess
         initprp(parityCheckMatrix, lratio, dblk, bprb);
 
         // Do up to abs(MAX_ITERATION) iterations of probability propagation, stopping
         // early if a codeword is found, unless MAX_ITERATION is negative.
-
-        int maxIteration = MAX_ITERATION;
+        int iterations = MAX_ITERATION;
+        int n;
         for (n = 0; ; n++) {
             boolean c = check(parityCheckMatrix, dblk);
-
-            if (n == maxIteration || n == -maxIteration || c) {
+            if (n == iterations || n == -iterations || c) {
                 break;
             }
-
             iterprp(parityCheckMatrix, lratio, dblk, bprb);
         }
 
@@ -197,7 +201,7 @@ public class LdpcEncoder implements Encoder {
             }
         }
         Matrix syndrome = parityCheckMatrix.multiply(matrix);
-        return syndrome.getColumns().get(0).isEmpty();
+        return syndrome.getColumns().isEmpty();
     }
 
     private void initprp(Matrix parityCheckMatrix,  // Parity check matrix
@@ -218,24 +222,20 @@ public class LdpcEncoder implements Encoder {
                          double[] lratio,           // Likelihood ratios for bits
                          boolean[] dblk,            // Place to store decoding
                          double[] bprb) {           // Place to store bit probabilities, 0 if not wanted
-        double pr, dl, t;
-        Element e;
-        int N, M;
-        int i, j;
 
-        M = parityCheckMatrix.getHeight();
-        N = parityCheckMatrix.getWidth();
+        int M = parityCheckMatrix.getHeight();
+        int N = parityCheckMatrix.getWidth();
 
         // Recompute likelihood ratios
-        for (i = 0; i < M; i++) {
-            dl = 1;
-            for (e = parityCheckMatrix.firstInRow(i); e.right() != null; e = e.right()) {
+        for (int i = 0; i < M; i++) {
+            double dl = 1;
+            for (Element e = parityCheckMatrix.firstInRow(i); e.right() != null; e = e.right()) {
                 e.setLikelihoodRatio(dl);
                 dl *= 2 / (1 + e.getProbabilityRatio()) - 1;
             }
             dl = 1;
-            for (e = parityCheckMatrix.lastInRow(i); e.left() != null; e = e.left()) {
-                t = e.getLikelihoodRatio() * dl;
+            for (Element e = parityCheckMatrix.lastInRow(i); e.left() != null; e = e.left()) {
+                double t = e.getLikelihoodRatio() * dl;
                 e.setLikelihoodRatio((1 - t) / (1 + t));
                 dl *= 2 / (1 + e.getProbabilityRatio()) - 1;
             }
@@ -243,24 +243,20 @@ public class LdpcEncoder implements Encoder {
 
         // Recompute probability ratios
         // Also find the next guess based on the individually most likely values
-        for (j = 0; j < N; j++) {
-            pr = lratio[j];
-            for (e = parityCheckMatrix.firstInColumn(j); e.bottom() != null; e = e.bottom()) {
+        for (int j = 0; j < N; j++) {
+            double pr = lratio[j];
+            for (Element e = parityCheckMatrix.firstInColumn(j); e.bottom() != null; e = e.bottom()) {
                 e.setProbabilityRatio(pr);
                 pr *= e.getLikelihoodRatio();
             }
-//            if (isnan(pr)) {
-//                pr = 1;
-//            }
+            // todo: check if is undefined    if (isnan(pr)) { pr = 1; }
 
             bprb[j] = 1 - 1 / (1 + pr);
             dblk[j] = pr >= 1;
             pr = 1;
-            for (e = parityCheckMatrix.lastInColumn(j); e.top() != null; e = e.top()) {
-                e.setProbabilityRatio(pr);
-//                if (isnan(e.getProbabilityRatio())) {
-//                    e.setProbabilityRatio(1);
-//                }
+            for (Element e = parityCheckMatrix.lastInColumn(j); e.top() != null; e = e.top()) {
+                e.setProbabilityRatio(e.getProbabilityRatio() * pr);
+                // todo: check if is undefined     if (isnan(e.getProbabilityRatio())) { e.setProbabilityRatio(1); }
                 pr *= e.getLikelihoodRatio();
             }
         }

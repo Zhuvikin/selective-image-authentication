@@ -37,9 +37,10 @@ public class BitSequence {
         return subSequence(start, true, end, false);
     }
 
-    public void remove(int index) {
+    public BitSequence remove(int index) {
         checkBounds(index);
         bits.remove(index);
+        return this;
     }
 
     public boolean isSet(int index) {
@@ -77,6 +78,13 @@ public class BitSequence {
     }
 
     @Override
+    public BitSequence clone() {
+        BitSequence sequence = new BitSequence(length);
+        bits.forEach(sequence::set);
+        return sequence;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof BitSequence)) return false;
@@ -96,13 +104,13 @@ public class BitSequence {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder("{");
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < length; i++) {
             result.append(bits.contains(i) ? "1" : "0");
             if (i < length - 1) {
-                result.append(", ");
+                result.append(" ");
             }
         }
-        return result + "}";
+        return result.toString();
     }
 }

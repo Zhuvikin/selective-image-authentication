@@ -52,6 +52,8 @@ public final class EquationSolver {
             // Set bit of solution, zero if arbitrary.
             if (x.isSet(ii) != b) {
                 y.set(i);
+            } else {
+                y.remove(i);
             }
         }
         return y;
@@ -104,6 +106,8 @@ public final class EquationSolver {
             // Set bit of solution, zero if arbitrary.
             if (y.isSet(i) != b) {
                 z.set(ii);
+            } else {
+                z.remove(ii);
             }
         }
 

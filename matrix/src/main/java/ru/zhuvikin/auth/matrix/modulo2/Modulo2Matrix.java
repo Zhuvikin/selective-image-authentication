@@ -140,11 +140,11 @@ public class Modulo2Matrix implements Matrix {
             rows.get(row).remove(column);
         }
         NavigableMap<Integer, Element> activeColumn = columns.get(column);
-        if (activeColumn.isEmpty()) {
+        if (activeColumn != null && activeColumn.isEmpty()) {
             columns.remove(column);
         }
         NavigableMap<Integer, Element> activeRow = rows.get(row);
-        if (activeRow.isEmpty()) {
+        if (activeRow != null && activeRow.isEmpty()) {
             rows.remove(row);
         }
         return this;
@@ -355,23 +355,12 @@ public class Modulo2Matrix implements Matrix {
     @Override
     public Matrix clone() {
         Modulo2Matrix result = new Modulo2Matrix(getWidth(), getHeight());
-        NavigableMap<Integer, NavigableMap<Integer, Element>> cloneColumns = cloneEntries(result, columns);
-        NavigableMap<Integer, NavigableMap<Integer, Element>> cloneRows = cloneEntries(result, rows);
-        result.setColumns(cloneColumns);
-        result.setRows(cloneRows);
-        return result;
-    }
-
-    private NavigableMap<Integer, NavigableMap<Integer, Element>> cloneEntries(Modulo2Matrix result, NavigableMap<Integer, NavigableMap<Integer, Element>> entries1) {
-        NavigableMap<Integer, NavigableMap<Integer, Element>> cloneColumns = new TreeMap<>();
-        for (Integer row : entries1.keySet()) {
-            TreeMap<Integer, Element> values = new TreeMap<>(entries1.get(row));
-            for (Element element : values.values()) {
-                element.setMatrix(result);
+        for (Integer column : columns.keySet()) {
+            for (Integer row : columns.get(column).keySet()) {
+                result.set(column, row);
             }
-            cloneColumns.put(row, values);
         }
-        return cloneColumns;
+        return result;
     }
 
     @Override
