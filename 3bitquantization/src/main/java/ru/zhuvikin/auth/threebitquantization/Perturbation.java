@@ -7,8 +7,8 @@ import lombok.Setter;
 @Setter
 public class Perturbation {
 
-    boolean bit0;
-    boolean bit1;
-    boolean bit2;
+    private boolean bit0;
+    private boolean bit1;
+    private boolean bit2;
 
 }

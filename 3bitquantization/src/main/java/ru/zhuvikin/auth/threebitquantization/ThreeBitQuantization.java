@@ -49,10 +49,52 @@ public final class ThreeBitQuantization {
         return new QuantizedData(quantizedFeatures, perturbations);
     }
 
-    public static List<Integer> restoreFeatures(QuantizedData dataToBeRestored, double delta) {
-        //BitSequence restored = new BitSequence(Math.round(dataToBeRestored.getLength() / 4));
+    public static List<Integer> restoreFeatures(List<Double> features, List<Perturbation> extractedPerturbations, double delta) {
+        List<Perturbation> estimatePerturbations = quantizeFeatures(features, delta).getPerturbation();
+        int featuresSize = features.size();
+        List<Integer> result = new ArrayList<>();
 
-        return new ArrayList<>();
+        for (int i = 0; i < featuresSize; i++) {
+
+            int bExtr = (extractedPerturbations.get(i).isBit1() ? 1 : 0) + 2 * (extractedPerturbations.get(i).isBit0() ? 1 : 0);
+            int bCalc = (estimatePerturbations.get(i).isBit1() ? 1 : 0) + 2 * (estimatePerturbations.get(i).isBit0() ? 1 : 0);
+
+            int rB = (bExtr + 1) % 4;
+            if (rB < 0) rB += 4;
+            if (rB > 3) rB -= 4;
+
+            int lB = (bExtr - 1) % 4;
+            if (lB < 0) lB += 4;
+            if (lB > 3) lB -= 4;
+
+            int a = 0;
+            if (bCalc == lB) {
+                a = 0;
+            } else if (bCalc == rB) {
+                a = 1;
+            } else {
+                a = 2;
+            }
+
+            int p3Extracted = extractedPerturbations.get(i).isBit2() ? 1 : 0;
+            int p3Calculated = estimatePerturbations.get(i).isBit2() ? 1 : 0;
+
+            double r;
+            if (a == 0 && p3Extracted == 0) {
+                r = features.get(i) + delta;
+            } else if (a == 0 && p3Calculated == 1) {
+                r = features.get(i) + delta;
+            } else if (a == 1 && p3Extracted == 1) {
+                r = features.get(i) - delta;
+            } else if (a == 1 && p3Calculated == 0) {
+                r = features.get(i) - delta;
+            } else {
+                r = features.get(i);
+            }
+
+            result.add((int) Math.floor(r / delta));
+        }
+        return result;
     }
 
 }
