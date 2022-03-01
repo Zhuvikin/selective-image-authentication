@@ -67,7 +67,7 @@ public final class ThreeBitQuantization {
             if (lB < 0) lB += 4;
             if (lB > 3) lB -= 4;
 
-            int a = 0;
+            int a;
             if (bCalc == lB) {
                 a = 0;
             } else if (bCalc == rB) {

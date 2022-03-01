@@ -1,28 +1,28 @@
 package ru.zhuvikin.auth.ldpc;
 
 import org.junit.Test;
-import ru.zhuvikin.auth.matrix.sparse.modulo2.BitSequence;
 import ru.zhuvikin.auth.code.Code;
-import ru.zhuvikin.auth.code.Encoder;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.BitSequence;
 import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static ru.zhuvikin.auth.ldpc.LdpcEncoder.decode;
+import static ru.zhuvikin.auth.ldpc.LdpcEncoder.encode;
 
 public class LdpcEncoderTest {
 
     private static final Code CODE = new Code(12, 24, 1);
-    private static final Encoder ENCODER = new LdpcEncoder();
 
     @Test
-    public void encode() throws Exception {
+    public void testEncode() throws Exception {
         BitSequence bitSequence = new BitSequence(12).set(0).set(1).set(6).set(8).set(11);
 
-        List<BitSequence> encoded = ENCODER.encode(CODE, bitSequence);
+        List<BitSequence> encoded = encode(CODE, bitSequence);
 
         assertEquals(1, encoded.size());
         BitSequence sequence = new BitSequence(24).set(0).set(1).set(3).set(6).set(9).set(10).set(12).set(18).set(20).set(23);
@@ -30,10 +30,10 @@ public class LdpcEncoderTest {
     }
 
     @Test
-    public void decode() throws Exception {
+    public void testDecode() throws Exception {
         BitSequence bitSequence = new BitSequence(12).set(2).set(8).set(9).set(10);
 
-        List<BitSequence> encoded = ENCODER.encode(CODE, bitSequence);
+        List<BitSequence> encoded = encode(CODE, bitSequence);
 
         assertEquals(1, encoded.size());
 
@@ -41,7 +41,7 @@ public class LdpcEncoderTest {
 
         assertEquals(expectedEncoded, encoded.get(0));
 
-        BitSequence decoded = ENCODER.decode(CODE, encoded);
+        BitSequence decoded = decode(CODE, encoded);
         assertEquals(bitSequence, decoded);
     }
 
@@ -149,8 +149,7 @@ public class LdpcEncoderTest {
         code.setParityCheckMatrix(parityCheckMatrix);
         code.setGeneratorMatrix(parityCheckMatrix.decompose());
 
-        LdpcEncoder encoder = new LdpcEncoder();
-        List<BitSequence> codeWords = encoder.encode(code, source);
+        List<BitSequence> codeWords = encode(code, source);
 
         BitSequence encodedExpected = new BitSequence(32).set(2).set(3).set(4).set(5).set(6).set(9).set(10)
                 .set(11).set(12).set(13).set(16).set(18).set(29).set(30);
@@ -160,7 +159,7 @@ public class LdpcEncoderTest {
         BitSequence encoded = codeWords.get(0);
         assertEquals(encodedExpected, encoded);
 
-        BitSequence decoded = encoder.decode(code, codeWords);
+        BitSequence decoded = decode(code, codeWords);
         System.out.println("decoded = " + decoded);
         assertEquals(source, decoded);
 
@@ -169,7 +168,7 @@ public class LdpcEncoderTest {
         BitSequence tampered = encoded.clone().set(0);
         System.out.println("tampered = " + tampered);
 
-        decoded = encoder.decode(code, Collections.singletonList(tampered));
+        decoded = decode(code, Collections.singletonList(tampered));
         System.out.println("decoded = " + decoded);
         assertEquals(source, decoded);
 
@@ -178,7 +177,7 @@ public class LdpcEncoderTest {
         tampered = encoded.clone().set(28);
         System.out.println("tampered = " + tampered);
 
-        decoded = encoder.decode(code, Collections.singletonList(tampered));
+        decoded = decode(code, Collections.singletonList(tampered));
         System.out.println("decoded = " + decoded);
         assertEquals(source, decoded);
 
@@ -187,7 +186,7 @@ public class LdpcEncoderTest {
         tampered = encoded.clone().set(28).set(31);
         System.out.println("tampered = " + tampered);
 
-        decoded = encoder.decode(code, Collections.singletonList(tampered));
+        decoded = decode(code, Collections.singletonList(tampered));
         System.out.println("decoded = " + decoded);
         assertEquals(source, decoded);
     }

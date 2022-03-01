@@ -15,7 +15,7 @@ dependencies {
 
     compile 'commons-cli:commons-cli:1.4'
 
-    compile project(':ldpc')
+    compile project(':watermarking')
 }
 
 mainClassName = 'ru.zhuvikin.auth.app.SelectiveAuthentication'

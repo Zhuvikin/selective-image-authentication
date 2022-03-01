@@ -6,6 +6,12 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 
+import java.awt.image.BufferedImage;
+
+import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
+import static ru.zhuvikin.auth.watermarking.SelectiveImageAuthentication.authenticate;
+import static ru.zhuvikin.auth.watermarking.SelectiveImageAuthentication.watermark;
+
 public class SelectiveAuthentication {
 
     @SneakyThrows
@@ -22,6 +28,11 @@ public class SelectiveAuthentication {
             System.out.println("t parameter is " + t);
         }
 
+        BufferedImage image = new BufferedImage(1, 1, TYPE_BYTE_GRAY);
+        BufferedImage watermarked = watermark(image);
+
+        boolean authentic = authenticate(watermarked);
+        System.out.println("The image is " + (authentic ? "authentic" : "fake"));
     }
 
 }

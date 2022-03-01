@@ -1,12 +1,11 @@
 package ru.zhuvikin.auth.ldpc;
 
-import ru.zhuvikin.auth.matrix.sparse.modulo2.BitSequence;
 import ru.zhuvikin.auth.code.Code;
-import ru.zhuvikin.auth.code.Encoder;
 import ru.zhuvikin.auth.matrix.sparse.Element;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
 import ru.zhuvikin.auth.matrix.sparse.Vector;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.BitSequence;
 import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import java.util.ArrayList;
@@ -16,14 +15,13 @@ import static ru.zhuvikin.auth.ldpc.ParityCheckMatrix.generate;
 import static ru.zhuvikin.auth.matrix.sparse.EquationSolver.backwardSubstitution;
 import static ru.zhuvikin.auth.matrix.sparse.EquationSolver.forwardSubstitution;
 
-public class LdpcEncoder implements Encoder {
+public final class LdpcEncoder {
 
     private static final int MAX_ITERATION = 500;
 
     private static final double BSC_ERROR_PROBABILITY = 0.1d;
 
-    @Override
-    public List<BitSequence> encode(Code code, BitSequence bitSequence) {
+    public static List<BitSequence> encode(Code code, BitSequence bitSequence) {
         prepareCode(code);
 
         Integer length = code.getLength();
@@ -46,15 +44,14 @@ public class LdpcEncoder implements Encoder {
         return result;
     }
 
-    @Override
-    public BitSequence decode(Code code, List<BitSequence> codeWords) {
+    public static BitSequence decode(Code code, List<BitSequence> codeWords) {
         return codeWords.stream()
                 .map(codeWord -> decode(code, codeWord))
                 .reduce(BitSequence::concatenate)
                 .orElse(new BitSequence(0));
     }
 
-    private void prepareCode(Code code) {
+    private static void prepareCode(Code code) {
         int length = code.getLength();
         int rank = code.getRank();
 
@@ -70,7 +67,7 @@ public class LdpcEncoder implements Encoder {
         }
     }
 
-    private BitSequence encodeBlock(BitSequence blockBits, Code code) {
+    private static BitSequence encodeBlock(BitSequence blockBits, Code code) {
         Integer length = code.getLength();
         Integer rank = code.getRank();
 
@@ -112,7 +109,7 @@ public class LdpcEncoder implements Encoder {
         return wordBitSequence;
     }
 
-    private BitSequence decode(Code code, BitSequence codeWord) {
+    private static BitSequence decode(Code code, BitSequence codeWord) {
         int M = code.getLength();
         int N = code.getRank();
 
@@ -154,49 +151,40 @@ public class LdpcEncoder implements Encoder {
         return bitSequence;
     }
 
-    private double changed(double[] lratio, // Likelihood ratios for bits
-                           boolean[] dblk,  // Candidate decoding
-                           int n) {         // Number of bits
+    private static double changed(double[] likelihoodRatios, boolean[] decodingCandidate, int numberOfBits) {
         double changed = 0;
-        for (int j = 0; j < n; j++) {
-            if (lratio[j] == 1) {
+        for (int j = 0; j < numberOfBits; j++) {
+            if (likelihoodRatios[j] == 1) {
                 changed += 0.5;
-            } else {
-                if (dblk[j] != (lratio[j] > 1)) {
-                    changed += 1;
-                }
+            } else if (decodingCandidate[j] != (likelihoodRatios[j] > 1)) {
+                changed += 1;
             }
         }
         return changed;
     }
 
-    private int propagationDecode(Matrix parityCheckMatrix,  // Parity check matrix
-                                  double[] lratio,           // Likelihood ratios for bits
-                                  boolean[] dblk,               // Place to store decoding
-                                  double[] bprb) {           // Place to store bit probabilities)
+    private static int propagationDecode(Matrix parityCheckMatrix, double[] likelihoodRatios, boolean[] decoded, double[] bitProbabilities) {
         // Initialize probability and likelihood ratios, and find initial guess
-        initprp(parityCheckMatrix, lratio, dblk, bprb);
+        initPropagation(parityCheckMatrix, likelihoodRatios, decoded, bitProbabilities);
 
         // Do up to abs(MAX_ITERATION) iterations of probability propagation, stopping
         // early if a codeword is found, unless MAX_ITERATION is negative.
         int iterations = MAX_ITERATION;
-        int n;
-        for (n = 0; ; n++) {
-            boolean c = check(parityCheckMatrix, dblk);
-            if (n == iterations || n == -iterations || c) {
+        int iteration;
+        for (iteration = 0; ; iteration++) {
+            boolean c = check(parityCheckMatrix, decoded);
+            if (iteration == iterations || iteration == -iterations || c) {
                 break;
             }
-            iterprp(parityCheckMatrix, lratio, dblk, bprb);
+            iteratePropagation(parityCheckMatrix, likelihoodRatios, decoded, bitProbabilities);
         }
-
-        return n;
+        return iteration;
     }
 
-    private boolean check(Matrix parityCheckMatrix, // Parity check matrix
-                          boolean[] dblk) {         // Guess for codeword
-        Matrix matrix = new Modulo2Matrix(1, dblk.length);
-        for (int i = 0; i < dblk.length; i++) {
-            if (dblk[i]) {
+    private static boolean check(Matrix parityCheckMatrix, boolean[] codewordGuess) {
+        Matrix matrix = new Modulo2Matrix(1, codewordGuess.length);
+        for (int i = 0; i < codewordGuess.length; i++) {
+            if (codewordGuess[i]) {
                 matrix.set(0, i);
             }
         }
@@ -204,30 +192,20 @@ public class LdpcEncoder implements Encoder {
         return syndrome.getColumns().isEmpty();
     }
 
-    private void initprp(Matrix parityCheckMatrix,  // Parity check matrix
-                         double[] lratio,           // Likelihood ratios for bits
-                         boolean[] dblk,               // Place to store decoding
-                         double[] bprb) {           // Place to store bit probabilities
+    private static void initPropagation(Matrix parityCheckMatrix, double[] likelihoodRatios, boolean[] decoded, double[] bitProbabilities) {
         for (int j = 0; j < parityCheckMatrix.getWidth(); j++) {
             for (Element e = parityCheckMatrix.firstInColumn(j); e.bottom() != null; e = e.bottom()) {
-                e.setProbabilityRatio(lratio[j]);
+                e.setProbabilityRatio(likelihoodRatios[j]);
                 e.setLikelihoodRatio(1);
             }
-            bprb[j] = 1 - 1 / (1 + lratio[j]);
-            dblk[j] = lratio[j] >= 1;
+            bitProbabilities[j] = 1 - 1 / (1 + likelihoodRatios[j]);
+            decoded[j] = likelihoodRatios[j] >= 1;
         }
     }
 
-    private void iterprp(Matrix parityCheckMatrix,  // Parity check matrix
-                         double[] lratio,           // Likelihood ratios for bits
-                         boolean[] dblk,            // Place to store decoding
-                         double[] bprb) {           // Place to store bit probabilities, 0 if not wanted
-
-        int M = parityCheckMatrix.getHeight();
-        int N = parityCheckMatrix.getWidth();
-
+    private static void iteratePropagation(Matrix parityCheckMatrix, double[] likelihoodRatios, boolean[] decoded, double[] bitProbabilities) {
         // Recompute likelihood ratios
-        for (int i = 0; i < M; i++) {
+        for (int i = 0; i < parityCheckMatrix.getHeight(); i++) {
             double dl = 1;
             for (Element e = parityCheckMatrix.firstInRow(i); e.right() != null; e = e.right()) {
                 e.setLikelihoodRatio(dl);
@@ -243,16 +221,16 @@ public class LdpcEncoder implements Encoder {
 
         // Recompute probability ratios
         // Also find the next guess based on the individually most likely values
-        for (int j = 0; j < N; j++) {
-            double pr = lratio[j];
+        for (int j = 0; j < parityCheckMatrix.getWidth(); j++) {
+            double pr = likelihoodRatios[j];
             for (Element e = parityCheckMatrix.firstInColumn(j); e.bottom() != null; e = e.bottom()) {
                 e.setProbabilityRatio(pr);
                 pr *= e.getLikelihoodRatio();
             }
             // todo: check if is undefined    if (isnan(pr)) { pr = 1; }
 
-            bprb[j] = 1 - 1 / (1 + pr);
-            dblk[j] = pr >= 1;
+            bitProbabilities[j] = 1 - 1 / (1 + pr);
+            decoded[j] = pr >= 1;
             pr = 1;
             for (Element e = parityCheckMatrix.lastInColumn(j); e.top() != null; e = e.top()) {
                 e.setProbabilityRatio(e.getProbabilityRatio() * pr);
