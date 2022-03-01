@@ -1,8 +1,8 @@
 package ru.zhuvikin.auth.ldpc;
 
-import ru.zhuvikin.auth.matrix.Element;
-import ru.zhuvikin.auth.matrix.Matrix;
-import ru.zhuvikin.auth.matrix.modulo2.Modulo2Matrix;
+import ru.zhuvikin.auth.matrix.sparse.Element;
+import ru.zhuvikin.auth.matrix.sparse.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import java.util.ArrayList;
 import java.util.List;

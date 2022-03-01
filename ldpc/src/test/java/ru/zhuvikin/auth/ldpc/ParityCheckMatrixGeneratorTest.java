@@ -2,8 +2,8 @@ package ru.zhuvikin.auth.ldpc;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ru.zhuvikin.auth.matrix.Element;
-import ru.zhuvikin.auth.matrix.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.Element;
+import ru.zhuvikin.auth.matrix.sparse.Matrix;
 
 import java.util.NavigableMap;
 

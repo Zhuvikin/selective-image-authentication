@@ -1,5 +1,8 @@
 rootProject.name = 'authentication'
 
+include '3bitquantization'
+include 'watermarking'
 include 'application'
-include 'ldpc'
 include 'matrix'
+include 'image'
+include 'ldpc'

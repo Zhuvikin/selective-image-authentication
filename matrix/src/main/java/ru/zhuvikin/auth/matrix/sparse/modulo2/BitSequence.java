@@ -1,4 +1,4 @@
-package ru.zhuvikin.auth.code;
+package ru.zhuvikin.auth.matrix.sparse.modulo2;
 
 import lombok.Getter;
 import lombok.Setter;

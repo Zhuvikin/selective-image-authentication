@@ -1,4 +1,4 @@
-package ru.zhuvikin.auth.matrix;
+package ru.zhuvikin.auth.matrix.sparse;
 
 import java.util.NavigableMap;
 

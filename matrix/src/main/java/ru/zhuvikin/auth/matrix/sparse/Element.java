@@ -1,4 +1,4 @@
-package ru.zhuvikin.auth.matrix;
+package ru.zhuvikin.auth.matrix.sparse;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

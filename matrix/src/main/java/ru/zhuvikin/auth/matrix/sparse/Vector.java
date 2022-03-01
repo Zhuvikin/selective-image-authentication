@@ -1,7 +1,7 @@
-package ru.zhuvikin.auth.matrix;
+package ru.zhuvikin.auth.matrix.sparse;
 
 import lombok.Getter;
-import ru.zhuvikin.auth.matrix.modulo2.Modulo2Matrix;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import java.util.function.BiConsumer;
 

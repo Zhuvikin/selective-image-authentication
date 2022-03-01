@@ -1,7 +1,8 @@
 package ru.zhuvikin.auth.matrix;
 
 import org.junit.Test;
-import ru.zhuvikin.auth.matrix.modulo2.Modulo2Matrix;
+import ru.zhuvikin.auth.matrix.sparse.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;

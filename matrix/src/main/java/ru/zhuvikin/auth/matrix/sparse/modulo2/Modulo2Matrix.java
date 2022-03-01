@@ -1,10 +1,10 @@
-package ru.zhuvikin.auth.matrix.modulo2;
+package ru.zhuvikin.auth.matrix.sparse.modulo2;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.zhuvikin.auth.matrix.Element;
-import ru.zhuvikin.auth.matrix.LUDecomposition;
-import ru.zhuvikin.auth.matrix.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.Element;
+import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
+import ru.zhuvikin.auth.matrix.sparse.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,20 +1,20 @@
 package ru.zhuvikin.auth.ldpc;
 
-import ru.zhuvikin.auth.code.BitSequence;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.BitSequence;
 import ru.zhuvikin.auth.code.Code;
 import ru.zhuvikin.auth.code.Encoder;
-import ru.zhuvikin.auth.matrix.Element;
-import ru.zhuvikin.auth.matrix.LUDecomposition;
-import ru.zhuvikin.auth.matrix.Matrix;
-import ru.zhuvikin.auth.matrix.Vector;
-import ru.zhuvikin.auth.matrix.modulo2.Modulo2Matrix;
+import ru.zhuvikin.auth.matrix.sparse.Element;
+import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
+import ru.zhuvikin.auth.matrix.sparse.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.Vector;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static ru.zhuvikin.auth.ldpc.ParityCheckMatrix.generate;
-import static ru.zhuvikin.auth.matrix.EquationSolver.backwardSubstitution;
-import static ru.zhuvikin.auth.matrix.EquationSolver.forwardSubstitution;
+import static ru.zhuvikin.auth.matrix.sparse.EquationSolver.backwardSubstitution;
+import static ru.zhuvikin.auth.matrix.sparse.EquationSolver.forwardSubstitution;
 
 public class LdpcEncoder implements Encoder {
 

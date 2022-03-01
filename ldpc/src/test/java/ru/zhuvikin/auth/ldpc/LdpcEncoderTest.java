@@ -1,12 +1,12 @@
 package ru.zhuvikin.auth.ldpc;
 
 import org.junit.Test;
-import ru.zhuvikin.auth.code.BitSequence;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.BitSequence;
 import ru.zhuvikin.auth.code.Code;
 import ru.zhuvikin.auth.code.Encoder;
-import ru.zhuvikin.auth.matrix.LUDecomposition;
-import ru.zhuvikin.auth.matrix.Matrix;
-import ru.zhuvikin.auth.matrix.modulo2.Modulo2Matrix;
+import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
+import ru.zhuvikin.auth.matrix.sparse.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import java.util.Collections;
 import java.util.List;
