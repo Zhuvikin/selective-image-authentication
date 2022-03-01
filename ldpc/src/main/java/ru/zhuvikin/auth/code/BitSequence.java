@@ -25,11 +25,11 @@ public class BitSequence {
         return this;
     }
 
-    public BitSequence subSequence(int start, boolean startInclusinve, int end, boolean endInclusinve) {
-        checkBounds(startInclusinve ? start : start + 1);
-        checkBounds(endInclusinve ? end : end - 1);
+    public BitSequence subSequence(int start, boolean startInclusive, int end, boolean endInclusive) {
+        checkBounds(startInclusive ? start : start + 1);
+        checkBounds(endInclusive ? end : end - 1);
         BitSequence sequence = new BitSequence(end - start);
-        sequence.setAll(bits.subSet(start, startInclusinve, end, endInclusinve));
+        sequence.setAll(bits.subSet(start, startInclusive, end, endInclusive));
         return sequence;
     }
 

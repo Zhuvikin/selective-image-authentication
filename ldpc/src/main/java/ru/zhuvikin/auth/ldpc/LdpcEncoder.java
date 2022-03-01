@@ -7,6 +7,7 @@ import ru.zhuvikin.auth.matrix.Element;
 import ru.zhuvikin.auth.matrix.LUDecomposition;
 import ru.zhuvikin.auth.matrix.Matrix;
 import ru.zhuvikin.auth.matrix.Vector;
+import ru.zhuvikin.auth.matrix.modulo2.Modulo2Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,10 @@ import static ru.zhuvikin.auth.matrix.EquationSolver.backwardSubstitution;
 import static ru.zhuvikin.auth.matrix.EquationSolver.forwardSubstitution;
 
 public class LdpcEncoder implements Encoder {
+
+    private static final int MAX_ITERATION = 500;
+
+    private static final double BSC_ERROR_PROBABILITY = 0.1d;
 
     @Override
     public List<BitSequence> encode(Code code, BitSequence bitSequence) {
@@ -108,10 +113,157 @@ public class LdpcEncoder implements Encoder {
     }
 
     private BitSequence decode(Code code, BitSequence codeWord) {
-        int length = code.getLength();
-        int rank = code.getRank();
+        int M = code.getLength();
+        int N = code.getRank();
 
-        return new BitSequence(rank - length);
+        boolean[] dblk = new boolean[N];
+        double[] lratio = new double[N];
+        double[] bitpr = new double[N];
+
+        int iterations;        // Unsigned because can be huge for enum
+        double changed;    // Double because can be fraction if lratio==1
+
+        Matrix parityCheckMatrix = code.getParityCheckMatrix();
+
+        // Find likelihood ratio for each bit
+        for (int i = 0; i < N; i++) {
+            lratio[i] = codeWord.isSet(i) ?
+                    (1 - BSC_ERROR_PROBABILITY) / BSC_ERROR_PROBABILITY :
+                    BSC_ERROR_PROBABILITY / (1 - BSC_ERROR_PROBABILITY);
+        }
+
+        // Try to decode using the specified method.
+        iterations = propagationDecode(parityCheckMatrix, lratio, dblk, bitpr);
+        System.out.println("Performed iteration: " + iterations);
+
+        // See if it worked, and how many bits were changed.
+        boolean valid = check(parityCheckMatrix, dblk);
+        System.out.println(valid ? "Block valid" : "Block is invalid");
+
+        changed = changed(lratio, dblk, N);
+        System.out.println("Changed bits: " + changed);
+
+        return new BitSequence(N - M);
+    }
+
+    private double changed(double[] lratio, // Likelihood ratios for bits
+                           boolean[] dblk,  // Candidate decoding
+                           int n) {         // Number of bits
+        double changed = 0;
+        for (int j = 0; j < n; j++) {
+            if (lratio[j] == 1) {
+                changed += 0.5;
+            } else {
+                if (dblk[j] != (lratio[j] > 1)) {
+                    changed += 1;
+                }
+            }
+        }
+        return changed;
+    }
+
+    private int propagationDecode(Matrix parityCheckMatrix,  // Parity check matrix
+                                  double[] lratio,           // Likelihood ratios for bits
+                                  boolean[] dblk,               // Place to store decoding
+                                  double[] bprb) {           // Place to store bit probabilities)
+        int n;
+
+        // Initialize probability and likelihood ratios, and find initial guess
+        initprp(parityCheckMatrix, lratio, dblk, bprb);
+
+        // Do up to abs(MAX_ITERATION) iterations of probability propagation, stopping
+        // early if a codeword is found, unless MAX_ITERATION is negative.
+
+        int maxIteration = MAX_ITERATION;
+        for (n = 0; ; n++) {
+            boolean c = check(parityCheckMatrix, dblk);
+
+            if (n == maxIteration || n == -maxIteration || c) {
+                break;
+            }
+
+            iterprp(parityCheckMatrix, lratio, dblk, bprb);
+        }
+
+        return n;
+    }
+
+    private boolean check(Matrix parityCheckMatrix, // Parity check matrix
+                          boolean[] dblk) {         // Guess for codeword
+        Matrix matrix = new Modulo2Matrix(1, dblk.length);
+        for (int i = 0; i < dblk.length; i++) {
+            if (dblk[i]) {
+                matrix.set(0, i);
+            }
+        }
+        Matrix syndrome = parityCheckMatrix.multiply(matrix);
+        return syndrome.getColumns().get(0).isEmpty();
+    }
+
+    private void initprp(Matrix parityCheckMatrix,  // Parity check matrix
+                         double[] lratio,           // Likelihood ratios for bits
+                         boolean[] dblk,               // Place to store decoding
+                         double[] bprb) {           // Place to store bit probabilities
+        for (int j = 0; j < parityCheckMatrix.getWidth(); j++) {
+            for (Element e = parityCheckMatrix.firstInColumn(j); e.bottom() != null; e = e.bottom()) {
+                e.setProbabilityRatio(lratio[j]);
+                e.setLikelihoodRatio(1);
+            }
+            bprb[j] = 1 - 1 / (1 + lratio[j]);
+            dblk[j] = lratio[j] >= 1;
+        }
+    }
+
+    private void iterprp(Matrix parityCheckMatrix,  // Parity check matrix
+                         double[] lratio,           // Likelihood ratios for bits
+                         boolean[] dblk,            // Place to store decoding
+                         double[] bprb) {           // Place to store bit probabilities, 0 if not wanted
+        double pr, dl, t;
+        Element e;
+        int N, M;
+        int i, j;
+
+        M = parityCheckMatrix.getHeight();
+        N = parityCheckMatrix.getWidth();
+
+        // Recompute likelihood ratios
+        for (i = 0; i < M; i++) {
+            dl = 1;
+            for (e = parityCheckMatrix.firstInRow(i); e.right() != null; e = e.right()) {
+                e.setLikelihoodRatio(dl);
+                dl *= 2 / (1 + e.getProbabilityRatio()) - 1;
+            }
+            dl = 1;
+            for (e = parityCheckMatrix.lastInRow(i); e.left() != null; e = e.left()) {
+                t = e.getLikelihoodRatio() * dl;
+                e.setLikelihoodRatio((1 - t) / (1 + t));
+                dl *= 2 / (1 + e.getProbabilityRatio()) - 1;
+            }
+        }
+
+        // Recompute probability ratios
+        // Also find the next guess based on the individually most likely values
+        for (j = 0; j < N; j++) {
+            pr = lratio[j];
+            for (e = parityCheckMatrix.firstInColumn(j); e.bottom() != null; e = e.bottom()) {
+                e.setProbabilityRatio(pr);
+                pr *= e.getLikelihoodRatio();
+            }
+//            if (isnan(pr)) {
+//                pr = 1;
+//            }
+
+            bprb[j] = 1 - 1 / (1 + pr);
+            dblk[j] = pr >= 1;
+            pr = 1;
+            for (e = parityCheckMatrix.lastInColumn(j); e.top() != null; e = e.top()) {
+                e.setProbabilityRatio(pr);
+//                if (isnan(e.getProbabilityRatio())) {
+//                    e.setProbabilityRatio(1);
+//                }
+                pr *= e.getLikelihoodRatio();
+            }
+        }
     }
 
 }

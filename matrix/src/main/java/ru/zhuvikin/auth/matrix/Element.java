@@ -16,6 +16,9 @@ public class Element {
 
     private Matrix matrix;
 
+    double probabilityRatio;
+    double likelihoodRatio;
+
     public Element(int column, int row, Matrix matrix) {
         this.column = column;
         this.row = row;
@@ -33,11 +36,33 @@ public class Element {
         return entry.getValue();
     }
 
+    public Element left() {
+        if (column < 0) {
+            return null;
+        }
+        Map.Entry<Integer, Element> entry = matrix.getRows().get(row).lowerEntry(column);
+        if (entry == null) {
+            return new Element(-1, row, matrix);
+        }
+        return entry.getValue();
+    }
+
     public Element bottom() {
         if (row < 0) {
             return null;
         }
         Map.Entry<Integer, Element> entry = matrix.getColumns().get(column).higherEntry(row);
+        if (entry == null) {
+            return new Element(column, -1, matrix);
+        }
+        return entry.getValue();
+    }
+
+    public Element top() {
+        if (row < 0) {
+            return null;
+        }
+        Map.Entry<Integer, Element> entry = matrix.getColumns().get(column).lowerEntry(row);
         if (entry == null) {
             return new Element(column, -1, matrix);
         }
