@@ -5,7 +5,10 @@ plugins {
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.16.18'
 
+    compile project(':ldpc')
     compile project(':image')
+    compile project(':security')
+    compile project(':three-bit-quantization')
 
     testCompileOnly 'org.projectlombok:lombok:1.16.18'
     testCompile 'junit:junit:4.12'

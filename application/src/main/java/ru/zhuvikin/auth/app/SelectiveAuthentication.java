@@ -29,10 +29,10 @@ public class SelectiveAuthentication {
         }
 
         BufferedImage image = new BufferedImage(1, 1, TYPE_BYTE_GRAY);
-        BufferedImage watermarked = watermark(image);
+        //BufferedImage watermarked = watermark(image);
 
-        boolean authentic = authenticate(watermarked);
-        System.out.println("The image is " + (authentic ? "authentic" : "fake"));
+        //boolean authentic = authenticate(watermarked);
+        //System.out.println("The image is " + (authentic ? "authentic" : "fake"));
     }
 
 }

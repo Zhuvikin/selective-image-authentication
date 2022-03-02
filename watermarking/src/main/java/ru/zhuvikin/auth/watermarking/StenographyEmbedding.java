@@ -8,9 +8,9 @@ import java.util.List;
 import static ru.zhuvikin.auth.image.hwt.HaarWaveletTransform.doHaar2DFWTransform;
 import static ru.zhuvikin.auth.image.hwt.HaarWaveletTransform.doHaar2DInvTransform;
 
-public final class StenographyEmbedded {
+public final class StenographyEmbedding {
 
-    private static final int HWT_LEVELS = 3;
+    public static final int HWT_LEVELS = 3;
 
     public static BufferedImage embed(BufferedImage image, BitSet bitSet, int length, double gamma) {
         int width = image.getWidth();

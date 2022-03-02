@@ -9,6 +9,7 @@ import ru.zhuvikin.auth.matrix.sparse.modulo2.BitSequence;
 import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 import static ru.zhuvikin.auth.ldpc.ParityCheckMatrix.generate;
@@ -21,34 +22,57 @@ public final class LdpcEncoder {
 
     private static final double BSC_ERROR_PROBABILITY = 0.1d;
 
-    public static List<BitSequence> encode(Code code, BitSequence bitSequence) {
+    public static BitSet encode(Code code, BitSet messageBits, int bitsLength) {
         prepareCode(code);
-
-        Integer length = code.getLength();
-        Integer rank = code.getRank();
-
+        int length = code.getLength();
+        int rank = code.getRank();
         int blockLength = rank - length;
-
-        int words = (int) Math.ceil(bitSequence.getLength() / blockLength);
+        int words = (int) Math.ceil(bitsLength / blockLength);
         int bits = words * blockLength;
 
         BitSequence bitSet = new BitSequence(bits);
-        bitSequence.forEach(bitSet::set);
-
-        List<BitSequence> result = new ArrayList<>();
-        for (int i = 0; i < words; i++) {
-            BitSequence blockBits = bitSet.subSequence(i * blockLength, (i + 1) * blockLength);
-            BitSequence word = encodeBlock(blockBits, code);
-            result.add(word);
+        for (int i = 0; i < bitsLength; i++) {
+            if (messageBits.get(i)) {
+                bitSet.set(i);
+            }
         }
-        return result;
+
+        BitSet encoded = new BitSet();
+        for (int wordIndex = 0; wordIndex < words; wordIndex++) {
+            BitSequence blockBits = bitSet.subSequence(wordIndex * blockLength, (wordIndex + 1) * blockLength);
+            BitSet word = encodeBlock(blockBits, code);
+            for (int i = 0; i < rank; i++) {
+                if (word.get(i)) {
+                    encoded.set(rank * wordIndex + i);
+                }
+            }
+        }
+        return encoded;
     }
 
-    public static BitSequence decode(Code code, List<BitSequence> codeWords) {
-        return codeWords.stream()
+    public static BitSet decode(Code code, BitSet encoded, int bitsLength) {
+        int rank = code.getRank();
+        int blockCount = bitsLength / rank;
+        List<BitSequence> encodedBlocks = new ArrayList<>();
+        for (int blockIndex = 0; blockIndex < blockCount; blockIndex++) {
+            BitSequence block = new BitSequence(rank);
+            for (int i = 0; i < rank; i++) {
+                int encodedBitIndex = blockIndex * rank + i;
+                if (encoded.get(encodedBitIndex)) {
+                    block.set(i);
+                }
+            }
+            encodedBlocks.add(block);
+        }
+
+        BitSequence bitSequence = encodedBlocks.stream()
                 .map(codeWord -> decode(code, codeWord))
                 .reduce(BitSequence::concatenate)
                 .orElse(new BitSequence(0));
+
+        BitSet decoded = new BitSet();
+        bitSequence.forEach(decoded::set);
+        return decoded;
     }
 
     private static void prepareCode(Code code) {
@@ -67,7 +91,7 @@ public final class LdpcEncoder {
         }
     }
 
-    private static BitSequence encodeBlock(BitSequence blockBits, Code code) {
+    private static BitSet encodeBlock(BitSequence blockBits, Code code) {
         Integer length = code.getLength();
         Integer rank = code.getRank();
 
@@ -97,7 +121,7 @@ public final class LdpcEncoder {
         Vector y = forwardSubstitution(generatorMatrix, x);
         Vector z = backwardSubstitution(generatorMatrix, y);
 
-        BitSequence wordBitSequence = new BitSequence(rank);
+        BitSet wordBitSequence = new BitSet(rank);
 
         for (int i = length; i < rank; i++) {
             if (blockBits.isSet(i - length)) {

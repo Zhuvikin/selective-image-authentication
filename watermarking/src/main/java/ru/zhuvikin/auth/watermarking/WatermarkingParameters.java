@@ -9,9 +9,16 @@ import lombok.Setter;
 @Builder
 public class WatermarkingParameters {
 
-    int length;
-    double sigma;
-    double gamma;
-    double delta;
+    @Builder.Default
+    private double eccCodeRate = 2;
+
+    @Builder.Default
+    private double sigma = 2;
+
+    @Builder.Default
+    private double gamma = 3;
+
+    @Builder.Default
+    private double delta = 0.5;
 
 }

@@ -18,7 +18,7 @@ import java.util.BitSet;
 
 import static org.junit.Assert.assertEquals;
 
-public class StenographyEmbeddedTest {
+public class StenographyEmbeddingTest {
 
     private static final double GAMMA = 2;
 
@@ -39,7 +39,7 @@ public class StenographyEmbeddedTest {
         bitSet.set(9);
         bitSet.set(11);
 
-        BufferedImage coverImage = StenographyEmbedded.embed(image, bitSet, 12, GAMMA);
+        BufferedImage coverImage = StenographyEmbedding.embed(image, bitSet, 12, GAMMA);
 
         assertEquals(image.getWidth(), coverImage.getWidth());
         assertEquals(image.getHeight(), coverImage.getHeight());
@@ -53,7 +53,7 @@ public class StenographyEmbeddedTest {
     public void extract() {
         BufferedImage image = ImageIO.read(LENA_WM_URL);
 
-        BitSet bitSet = StenographyEmbedded.extract(image, 12, GAMMA);
+        BitSet bitSet = StenographyEmbedding.extract(image, 12, GAMMA);
 
         BitSet expected = new BitSet();
         expected.set(1);

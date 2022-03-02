@@ -1,39 +1,87 @@
 package ru.zhuvikin.auth.watermarking;
 
-import java.awt.image.BufferedImage;
+import ru.zhuvikin.auth.code.Code;
+import ru.zhuvikin.auth.ldpc.LdpcEncoder;
+import ru.zhuvikin.auth.security.RsaKeys;
+import ru.zhuvikin.auth.security.SignatureProvider;
+import ru.zhuvikin.auth.threebitquantization.Perturbation;
+import ru.zhuvikin.auth.threebitquantization.QuantizedData;
+import ru.zhuvikin.auth.threebitquantization.ThreeBitQuantization;
 
-import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
+import java.awt.image.BufferedImage;
+import java.util.BitSet;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static ru.zhuvikin.auth.watermarking.StenographyEmbedding.HWT_LEVELS;
 
 public final class SelectiveImageAuthentication {
 
-    public static BufferedImage watermark(BufferedImage image) {
+    private static final ConcurrentHashMap<Double, ConcurrentHashMap<Integer, Code>> CODES = new ConcurrentHashMap<>();
+
+    public static BufferedImage watermark(BufferedImage image, WatermarkingParameters parameters, RsaKeys.PrivateKey privateKey) {
         int width = image.getWidth();
         int height = image.getHeight();
+        if (width != height) {
+            throw new IllegalArgumentException("Only rect images are currently supported");
+        }
+        int privateKeyLength = privateKey.getLength();
 
-        // todo: 1. Filter image with gaussian filter
+        int hwtDomainDimension = (int) Math.floor((double) width / Math.pow(2, HWT_LEVELS));
+        int domainCapacity = (int) Math.pow(hwtDomainDimension, 2);
+        int capacity = domainCapacity * 2;
 
-        // todo: 2. Find central finite differences
+        double eccCodeRate = parameters.getEccCodeRate();
+        int blockLength = (int) Math.floor((double) capacity / eccCodeRate);
+        int featuresLength = (int) Math.floor((double) (blockLength - privateKeyLength) / 3.0d);
 
-        // todo: 3. Find original size feature matrix
+        double sigma = parameters.getSigma();
+        double delta = parameters.getDelta();
+        double gamma = parameters.getGamma();
 
-        // todo: 4. Average downsampling to small size feature matrix
+        // Get features
+        List<Double> features = FeaturesCalculator.features(image, sigma, featuresLength);
 
-        // todo: 5. Convert to feature vector
+        // Apply 3-bit quantization
+        QuantizedData quantizedData = ThreeBitQuantization.quantizeFeatures(features, delta);
 
-        // todo: 6. Apply 3-bit quantization
+        // Sign quantized features
+        List<Integer> quantizedFeatures = quantizedData.getQuantizedFeatures();
+        BitSet signature = SignatureProvider.sign(quantizedFeatures, privateKey);
 
-        // todo: 7. Sign quantized features
+        // Concatenate signature and 3-bit quantization perturbations
+        List<Perturbation> perturbations = quantizedData.getPerturbation();
+        BitSet data = new BitSet();
+        int dataLength = perturbations.size() + privateKeyLength;
+        for (int i = 0; i < dataLength; i++) {
+            if (i < perturbations.size()) {
+                Perturbation perturbation = perturbations.get(i);
+                if (perturbation.isBit0()) {
+                    data.set(i * 3);
+                }
+                if (perturbation.isBit1()) {
+                    data.set(i * 3 + 1);
+                }
+                if (perturbation.isBit2()) {
+                    data.set(i * 3 + 2);
+                }
+            } else {
+                if (signature.get(i)) {
+                    data.set(i);
+                }
+            }
+        }
 
-        // todo: 8. Concatenate signature and 3-bit quantization perturbations
+        // Encode with LDPC-code
+        Code code = getCode(capacity, eccCodeRate);
 
-        // todo: 9. Encode with LDPC-code
+        BitSet encoded = LdpcEncoder.encode(code, data, dataLength);
 
-        // todo: 10. Embed by means of Haar Wavelet Transform
-
-        return new BufferedImage(width, height, TYPE_BYTE_GRAY);
+        // Embed by means of Haar Wavelet Transform
+        return StenographyEmbedding.embed(image, encoded, featuresLength, gamma);
     }
 
-    public static boolean authenticate(BufferedImage image) {
+    public static boolean authenticate(BufferedImage image, WatermarkingParameters parameters, RsaKeys.PublicKey publicKey) {
 
         // todo: 1. Extract by means of Haar Wavelet Transform
 
@@ -41,21 +89,32 @@ public final class SelectiveImageAuthentication {
 
         // todo: 3. Separate signature and 3-bit quantization perturbations
 
-        // todo: 4. Filter authenticated image with gaussian filter
+        // todo: 4. Get features of authenticated image
 
-        // todo: 5. Find central finite differences of authenticated image
+        // todo: 5. Restore feature vector with 3-bit quantization
 
-        // todo: 6. Find original size feature matrix of authenticated image
-
-        // todo: 7. Average downsampling to small size feature matrix of authenticated image
-
-        // todo: 8. Convert to feature vector of authenticated image
-
-        // todo: 9. Restore feature vector with 3-bit quantization
-
-        // todo: 10. Verify signature
+        // todo: 6. Verify signature
 
         return false;
+    }
+
+    private static Code getCode(int capacity, double eccCodeRate) {
+        int blockLength = (int) Math.floor((double) capacity / eccCodeRate);
+        Code code;
+        if (CODES.containsKey(eccCodeRate)) {
+            ConcurrentHashMap<Integer, Code> rateCodes = CODES.get(eccCodeRate);
+            if (rateCodes.containsKey(capacity)) {
+                code = rateCodes.get(capacity);
+            } else {
+                code = new Code(blockLength, capacity);
+                rateCodes.put(capacity, code);
+            }
+        } else {
+            code = new Code(blockLength, capacity);
+            CODES.put(eccCodeRate, new ConcurrentHashMap<>());
+            CODES.get(eccCodeRate).put(capacity, code);
+        }
+        return code;
     }
 
 }
