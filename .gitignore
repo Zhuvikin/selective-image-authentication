@@ -68,3 +68,4 @@ fabric.properties
 hs_err_pid*
 
 .lock
+/watermarking/lena_wm.jpg
