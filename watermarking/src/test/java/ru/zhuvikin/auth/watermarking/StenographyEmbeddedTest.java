@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 public class StenographyEmbeddedTest {
 
-    private static final double GAMMA = 1.9;
+    private static final double GAMMA = 2;
 
     private static final String LENA_JPG = "lena.jpg";
     private static final URL LENA_URL = FeaturesCalculatorTest.class.getClassLoader().getResource(LENA_JPG);
@@ -63,7 +63,7 @@ public class StenographyEmbeddedTest {
         expected.set(9);
         expected.set(11);
 
-        Assert.assertEquals(expected, bitSet.get(0, 12));
+        Assert.assertEquals(expected, bitSet);
     }
 
     @SneakyThrows

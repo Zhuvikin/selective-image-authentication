@@ -1,7 +1,9 @@
 package ru.zhuvikin.auth.watermarking;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
 import static ru.zhuvikin.auth.image.hwt.HaarWaveletTransform.doHaar2DFWTransform;
 import static ru.zhuvikin.auth.image.hwt.HaarWaveletTransform.doHaar2DInvTransform;
@@ -57,7 +59,40 @@ public final class StenographyEmbedded {
         extractFromDomain(gamma, domain, data, bitIndex, 0, 64, 64, 128);
         extractFromDomain(gamma, domain, data, bitIndex, 64, 128, 0, 64);
 
-        return data;
+        int repeated = (int) Math.ceil(data.length() / length);
+        List<BitSet> repeatedData = new ArrayList<>();
+        for (int i = 0; i < repeated; i++) {
+            repeatedData.add(new BitSet());
+        }
+
+        for (int i = 0; i < repeated * length; i++) {
+            int position = i % length;
+            int repeat = (int) Math.floor(i / length);
+            if (data.get(i)) {
+                repeatedData.get(repeat).set(position);
+            }
+        }
+
+        List<Integer> votes = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            votes.add(0);
+        }
+        for (BitSet voter : repeatedData) {
+            for (int i = 0; i < length; i++) {
+                if (voter.get(i)) {
+                    votes.set(i, votes.get(i) + 1);
+                }
+            }
+        }
+
+        BitSet result = new BitSet();
+        for (int i = 0; i < length; i++) {
+            if (Math.round((double) votes.get(i) / (double) repeated) == 1) {
+                result.set(i);
+            }
+        }
+
+        return result;
     }
 
     private static void extractFromDomain(double gamma, double[][] domain, BitSet data, int bitIndex, int fromJ, int toJ, int fromI, int toI) {
