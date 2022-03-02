@@ -6,50 +6,40 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Random;
-
-import static java.math.BigInteger.probablePrime;
 
 public final class SignatureProvider {
 
-    public static BitSet sign(List<Integer> quantizedFeatures, String passphrase, int signatureLength) {
-        int pAndQLength = (int) Math.floor(signatureLength / 2);
-
-        long seed1 = seedByPassphrase(passphrase);
-        BigInteger p = random(pAndQLength, seed1);
-
-        long seed2 = seedByPassphrase(passphrase + ".");
-        BigInteger q = random(pAndQLength, seed2);
-
-        RsaKeys keys = new RsaKeys(p, q);
+    public static BitSet sign(List<Integer> quantizedFeatures, RsaKeys.PrivateKey privateKey) {
+        int signatureLength = privateKey.getLength();
 
         BitSet hash = hash(quantizedFeatures, signatureLength);
         BigInteger hashInteger = new BigInteger(1, hash.toByteArray());
 
-        BigInteger n = keys.getN();
-        BigInteger d = keys.getD();
+        BigInteger modulo = privateKey.getModulo();
+        BigInteger privateExponent = privateKey.getPrivateExponent();
 
-        BigInteger signature = hashInteger.modPow(d, n);
+        BigInteger signature = hashInteger.modPow(privateExponent, modulo);
         return BitSet.valueOf(signature.toByteArray());
     }
 
-    public static boolean verify(List<Integer> quantizedFeatures, String passphrase, BitSet signature) {
-        BitSet check = sign(quantizedFeatures, passphrase, signature.length());
-        return check.equals(signature);
-    }
+    public static boolean verify(List<Integer> quantizedFeatures, RsaKeys.PublicKey publicKey, BitSet signature) {
+        int signatureLength = publicKey.getLength();
 
-    private static BigInteger random(int n, long seed) {
-        return probablePrime(n, new Random(seed));
-    }
+        BitSet hash = hash(quantizedFeatures, signatureLength);
 
-    private static long seedByPassphrase(String passphrase) {
-        BitSet hash = hash(passphrase, 9);
-        BigInteger integer = new BigInteger(1, hash.toByteArray());
-        return integer.longValueExact();
+        BigInteger signatureInteger = new BigInteger(1, signature.toByteArray());
+
+        BigInteger modulo = publicKey.getModulo();
+        BigInteger exponent = publicKey.getExponent();
+
+        BigInteger checked = signatureInteger.modPow(exponent, modulo);
+        BitSet checkBits = BitSet.valueOf(checked.toByteArray());
+
+        return checkBits.equals(hash);
     }
 
     @SneakyThrows
-    private static BitSet hash(String message, int length) {
+    public static BitSet hash(String message, int length) {
         BitSet bitSet = BitSet.valueOf(message.getBytes("UTF-8"));
         return hash(bitSet, length);
     }
