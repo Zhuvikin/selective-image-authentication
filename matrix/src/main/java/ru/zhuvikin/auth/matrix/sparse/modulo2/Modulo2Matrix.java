@@ -24,6 +24,9 @@ public class Modulo2Matrix implements Matrix {
     private NavigableMap<Integer, NavigableMap<Integer, Element>> columns = new TreeMap<>();
     private NavigableMap<Integer, NavigableMap<Integer, Element>> rows = new TreeMap<>();
 
+    public Modulo2Matrix() {
+    }
+
     public Modulo2Matrix(int width, int height) {
         this.width = width;
         this.height = height;
@@ -215,19 +218,37 @@ public class Modulo2Matrix implements Matrix {
 
     @Override
     public Matrix addRow(int toRow, Matrix matrix, int row) {
-        checkRowIndex(toRow, this);
-        checkRowIndex(row, matrix);
+        if (width < matrix.getWidth()) {
+            throw new RuntimeException("Row added to is shorter than row added from");
+        }
 
-        NavigableMap<Integer, Element> targetRow = rows.get(toRow);
-        NavigableMap<Integer, Element> fromRow = matrix.getRows().get(row);
+        if (toRow < 0 || toRow >= height || row < 0 || row >= matrix.getHeight()) {
+            throw new RuntimeException("Row index out of range");
+        }
 
-        for (Integer columnIndex : fromRow.keySet()) {
-            if (targetRow.containsKey(columnIndex)) {
-                remove(columnIndex, toRow);
+        Element ft;
+        Element f1 = firstInRow(toRow);
+        Element f2 = matrix.firstInRow(row);
+
+        while (f1.right() != null && f2.right() != null) {
+            if (f1.getColumn() > f2.getColumn()) {
+                set(f2.getColumn(), toRow);
+                f2 = f2.right();
             } else {
-                set(columnIndex, toRow);
+                ft = f1.right();
+                if (f1.getColumn() == f2.getColumn()) {
+                    f1.remove();
+                    f2 = f2.right();
+                }
+                f1 = ft;
             }
         }
+
+        while (f2.right() != null) {
+            set(f2.getColumn(), toRow);
+            f2 = f2.right();
+        }
+
         return this;
     }
 
@@ -251,13 +272,12 @@ public class Modulo2Matrix implements Matrix {
 
     @Override
     public LUDecomposition decompose() {
+        System.out.println("Start matrix LU decomposition");
         int subMatrixDimension = width < height ? width : height;
 
         Matrix left = new Modulo2Matrix(subMatrixDimension, height);
         Matrix upper = new Modulo2Matrix(width, subMatrixDimension);
         Matrix B = clone();
-
-        Element e = null, first, next;
 
         List<Integer> rows = IntStream.range(0, height).boxed().collect(Collectors.toList());
         List<Integer> columns = IntStream.range(0, width).boxed().collect(Collectors.toList());
@@ -265,10 +285,13 @@ public class Modulo2Matrix implements Matrix {
         List<Integer> rowsInv = new ArrayList<>(rows);
         List<Integer> columnsInv = new ArrayList<>(columns);
 
-        int k;
-        boolean found;
+        int rowsAdded = 0;
+        long r = 0;
         for (int i = 0; i < subMatrixDimension; i++) {
-            found = false;
+            System.out.println("Iteration of column " + i + " / " + subMatrixDimension);
+            boolean found = false;
+            Element e = null, first, next;
+            int k;
             for (k = i; k < width; k++) {
                 e = B.firstInColumn(columns.get(k));
                 if (e != null) {
@@ -314,9 +337,11 @@ public class Modulo2Matrix implements Matrix {
                 while (first.bottom() != null) {
                     next = first.bottom();
                     k = first.getRow();
-
                     if (rowsInv.get(k) > i && e != null) {
+                        long time = System.nanoTime();
                         B.addRow(k, B, e.getRow());
+                        r += System.nanoTime() - time;
+                        rowsAdded++;
                         left.set(i, k);
                     } else if (rowsInv.get(k) < i) {
                         upper.set(columns.get(i), rowsInv.get(k));
@@ -327,11 +352,14 @@ public class Modulo2Matrix implements Matrix {
                     first = next;
                 }
             }
+            System.out.println(i + ": block 2 finished");
+            System.out.println("Rows added: " + rowsAdded + " with " + (((double) r) / (rowsAdded * 1000.0)) + " ms. in average");
         }
 
+        System.out.println("Remove not needed bits");
         for (int i = subMatrixDimension; i < height; i++) {
             for (; ; ) {
-                first = left.firstInRow(rows.get(i));
+                Element first = left.firstInRow(rows.get(i));
                 if (first == null || first.right() == null) {
                     break;
                 }
@@ -339,6 +367,7 @@ public class Modulo2Matrix implements Matrix {
             }
         }
 
+        System.out.println("LU decomposition is finished");
         return new LUDecomposition(width, height, rows, columns, left, upper);
     }
 

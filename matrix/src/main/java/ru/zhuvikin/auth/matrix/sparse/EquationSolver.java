@@ -6,6 +6,7 @@ public final class EquationSolver {
 
     // Ly = x
     public static Vector forwardSubstitution(LUDecomposition decomposition, Vector x) {
+        System.out.println("Forward substitution is started");
         Matrix L = decomposition.getLeft();
         List<Integer> rows = decomposition.getRows();
 
@@ -46,6 +47,7 @@ public final class EquationSolver {
 
             // Check for no solution if the diagonal isn't 1.
             if (!d && b != x.isSet(ii)) {
+                System.out.println("Forward substitution is finished");
                 return y;
             }
 
@@ -56,11 +58,13 @@ public final class EquationSolver {
                 y.remove(i);
             }
         }
+        System.out.println("Forward substitution is finished");
         return y;
     }
 
     // Uz = y
     public static Vector backwardSubstitution(LUDecomposition decomposition, Vector y) {
+        System.out.println("Backward substitution is started");
         Matrix U = decomposition.getUpper();
         List<Integer> columns = decomposition.getColumns();
 
@@ -100,6 +104,7 @@ public final class EquationSolver {
 
             // Check for no solution if the diagonal isn't 1.
             if (!d && b != y.isSet(i)) {
+                System.out.println("Backward substitution is finished");
                 return z;
             }
 
@@ -111,6 +116,7 @@ public final class EquationSolver {
             }
         }
 
+        System.out.println("Backward substitution is finished");
         return z;
     }
 

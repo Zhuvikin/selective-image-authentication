@@ -59,7 +59,7 @@ public final class StenographyEmbedding {
         extractFromDomain(gamma, domain, data, bitIndex, 0, 64, 64, 128);
         extractFromDomain(gamma, domain, data, bitIndex, 64, 128, 0, 64);
 
-        int repeated = (int) Math.ceil(data.length() / length);
+        int repeated = (int) Math.ceil((double) data.length() / (double) length);
         List<BitSet> repeatedData = new ArrayList<>();
         for (int i = 0; i < repeated; i++) {
             repeatedData.add(new BitSet());

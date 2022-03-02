@@ -69,3 +69,5 @@ hs_err_pid*
 
 .lock
 /watermarking/lena_wm.jpg
+/watermarking/lena_embedded.jpg
+/watermarking/lena_watermarked.jpg

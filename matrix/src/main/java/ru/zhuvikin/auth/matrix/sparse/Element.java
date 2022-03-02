@@ -1,5 +1,6 @@
 package ru.zhuvikin.auth.matrix.sparse;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,10 +15,16 @@ public class Element {
     private int column;
     private int row;
 
+    @JsonIgnore
     private Matrix matrix;
 
+    @JsonIgnore
     double probabilityRatio;
+    @JsonIgnore
     double likelihoodRatio;
+
+    public Element() {
+    }
 
     public Element(int column, int row, Matrix matrix) {
         this.column = column;

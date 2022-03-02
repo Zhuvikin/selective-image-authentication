@@ -23,7 +23,6 @@ public final class LdpcEncoder {
     private static final double BSC_ERROR_PROBABILITY = 0.1d;
 
     public static BitSet encode(Code code, BitSet messageBits, int bitsLength) {
-        prepareCode(code);
         int length = code.getLength();
         int rank = code.getRank();
         int blockLength = rank - length;
@@ -73,22 +72,6 @@ public final class LdpcEncoder {
         BitSet decoded = new BitSet();
         bitSequence.forEach(decoded::set);
         return decoded;
-    }
-
-    private static void prepareCode(Code code) {
-        int length = code.getLength();
-        int rank = code.getRank();
-
-        if (code.getParityCheckMatrix() == null) {
-            Matrix parityCheckMatrix = generate(rank, length, code.getSeed());
-            code.setParityCheckMatrix(parityCheckMatrix);
-            code.setGeneratorMatrix(null);
-        }
-
-        if (code.getGeneratorMatrix() == null) {
-            LUDecomposition generatorMatrix = code.getParityCheckMatrix().decompose();
-            code.setGeneratorMatrix(generatorMatrix);
-        }
     }
 
     private static BitSet encodeBlock(BitSequence blockBits, Code code) {

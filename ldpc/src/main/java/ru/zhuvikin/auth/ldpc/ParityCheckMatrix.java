@@ -76,10 +76,11 @@ public final class ParityCheckMatrix {
         for (int iter = 0; iter < MAX_ELIMINATING_PASSES; iter++) {
             final int[] found = {0};
             IntStream.range(0, length).forEach(x -> checkColumn(x, parityCheckMatrix, found, random, rank));
-            System.out.println("found: " + found[0]);
+            System.out.println("found 4-cycles: " + found[0]);
             if (found[0] == 0) break;
         }
 
+        System.out.println("Parity-check matrix is generated");
         return parityCheckMatrix;
     }
 

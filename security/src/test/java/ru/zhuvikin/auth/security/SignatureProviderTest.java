@@ -15,7 +15,7 @@ public class SignatureProviderTest {
 
     private static final List<Integer> FEATURES = Arrays.asList(1, -1, 0, 3, 7, 8);
 
-    private static final String PASSWORD =  "password";
+    private static final String PASSWORD = "password";
     private static final int SIGNATURE_LENGTH = 64;
 
     private static final RsaKeys RSA_KEYS = new RsaKeys(PASSWORD, SIGNATURE_LENGTH);
@@ -25,7 +25,7 @@ public class SignatureProviderTest {
 
         BitSet signature = sign(FEATURES, RSA_KEYS.getPrivateKey());
 
-        List<Integer> expectedOnes = Arrays.asList(1, 3, 5, 6, 9, 12, 13, 14, 15, 18, 20, 22, 24, 26, 28, 31, 32, 33, 40, 41, 46, 47, 52, 53, 54, 62);
+        List<Integer> expectedOnes = Arrays.asList(0, 1, 2, 4, 8, 9, 12, 14, 15, 18, 20, 21, 25, 27, 28, 29, 30, 31, 34, 35, 37, 38, 40, 41, 42, 43, 44, 46, 47, 52, 53, 54, 56, 57, 58, 59, 60, 62, 63);
         BitSet expected = new BitSet();
         expectedOnes.forEach(expected::set);
 

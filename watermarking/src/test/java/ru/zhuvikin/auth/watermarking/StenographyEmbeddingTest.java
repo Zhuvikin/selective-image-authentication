@@ -17,6 +17,7 @@ import java.net.URL;
 import java.util.BitSet;
 
 import static org.junit.Assert.assertEquals;
+import static ru.zhuvikin.auth.watermarking.TestUtility.saveJPEG;
 
 public class StenographyEmbeddingTest {
 
@@ -24,7 +25,7 @@ public class StenographyEmbeddingTest {
 
     private static final String LENA_JPG = "lena.jpg";
     private static final URL LENA_URL = FeaturesCalculatorTest.class.getClassLoader().getResource(LENA_JPG);
-    private static final String LENA_WM_JPG = "lena_wm.jpg";
+    private static final String LENA_WM_JPG = "lena_embedded.jpg";
     private static final URL LENA_WM_URL = FeaturesCalculatorTest.class.getClassLoader().getResource(LENA_WM_JPG);
 
     @Test
@@ -64,18 +65,6 @@ public class StenographyEmbeddingTest {
         expected.set(11);
 
         Assert.assertEquals(expected, bitSet);
-    }
-
-    @SneakyThrows
-    private static void saveJPEG(BufferedImage image, File file, float quality) {
-        JPEGImageWriteParam jpegParams = new JPEGImageWriteParam(null);
-        jpegParams.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        jpegParams.setCompressionQuality(quality);
-
-        final ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
-
-        writer.setOutput(new FileImageOutputStream(file));
-        writer.write(null, new IIOImage(image, null, null), jpegParams);
     }
 
 }

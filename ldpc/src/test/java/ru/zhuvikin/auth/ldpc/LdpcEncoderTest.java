@@ -1,7 +1,9 @@
 package ru.zhuvikin.auth.ldpc;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.zhuvikin.auth.code.Code;
+import ru.zhuvikin.auth.code.CodeCache;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
 import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
@@ -14,7 +16,12 @@ import static ru.zhuvikin.auth.ldpc.LdpcEncoder.encode;
 
 public class LdpcEncoderTest {
 
-    private static final Code CODE = new Code(12, 24, 1);
+    private static Code CODE;
+
+    @BeforeClass
+    public static void init () {
+        CODE = CodeCache.of(12, 24);
+    }
 
     @Test
     public void testEncode() {
@@ -140,7 +147,7 @@ public class LdpcEncoderTest {
 
         System.out.println("source = " + source);
 
-        Code code = new Code(16, 32);
+        Code code = CodeCache.of(16, 32);
         code.setParityCheckMatrix(parityCheckMatrix);
         code.setGeneratorMatrix(parityCheckMatrix.decompose());
 

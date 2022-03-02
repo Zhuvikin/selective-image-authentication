@@ -1,6 +1,7 @@
 package ru.zhuvikin.auth.watermarking;
 
 import ru.zhuvikin.auth.code.Code;
+import ru.zhuvikin.auth.code.CodeCache;
 import ru.zhuvikin.auth.ldpc.LdpcEncoder;
 import ru.zhuvikin.auth.security.RsaKeys;
 import ru.zhuvikin.auth.security.SignatureProvider;
@@ -12,13 +13,10 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.zhuvikin.auth.watermarking.StenographyEmbedding.HWT_LEVELS;
 
 public final class SelectiveImageAuthentication {
-
-    private static final ConcurrentHashMap<Double, ConcurrentHashMap<Integer, Code>> CODES = new ConcurrentHashMap<>();
 
     public static BufferedImage watermark(BufferedImage image, WatermarkingParameters parameters, RsaKeys.PrivateKey privateKey) {
         int width = image.getWidth();
@@ -53,30 +51,33 @@ public final class SelectiveImageAuthentication {
         // Concatenate signature and 3-bit quantization perturbations
         List<Perturbation> perturbations = quantizedData.getPerturbation();
         BitSet data = new BitSet();
-        int dataLength = featuresLength + privateKeyLength;
-        for (int i = 0; i < dataLength; i++) {
-            if (i < featuresLength) {
-                Perturbation perturbation = perturbations.get(i);
-                if (perturbation.isBit0()) {
-                    data.set(i * 3);
-                }
-                if (perturbation.isBit1()) {
-                    data.set(i * 3 + 1);
-                }
-                if (perturbation.isBit2()) {
-                    data.set(i * 3 + 2);
-                }
-            } else {
-                if (signature.get(i - featuresLength)) {
-                    data.set(i);
-                }
+        int dataLength = featuresLength * 3 + privateKeyLength;
+        for (int i = 0; i < featuresLength; i++) {
+            Perturbation perturbation = perturbations.get(i);
+            if (perturbation.isBit0()) {
+                data.set(i * 3);
+            }
+            if (perturbation.isBit1()) {
+                data.set(i * 3 + 1);
+            }
+            if (perturbation.isBit2()) {
+                data.set(i * 3 + 2);
+            }
+        }
+
+        for (int i = 0; i < privateKeyLength; i++) {
+            if (signature.get(i)) {
+                data.set(featuresLength * 3 + i);
             }
         }
 
         // Encode with LDPC-code
-        Code code = getCode(capacity, eccCodeRate);
+        Code code = CodeCache.of(blockLength, capacity);
 
+        long start = System.currentTimeMillis();
         BitSet encoded = LdpcEncoder.encode(code, data, dataLength);
+        long seconds = (System.currentTimeMillis() - start) / 1000L;
+        System.out.println("Encoded in " + seconds + " s.");
 
         // Embed by means of Haar Wavelet Transform
         return StenographyEmbedding.embed(image, encoded, capacity, gamma);
@@ -102,64 +103,48 @@ public final class SelectiveImageAuthentication {
         double delta = parameters.getDelta();
         double gamma = parameters.getGamma();
 
-        // todo: 1. Extract by means of Haar Wavelet Transform
+        // 1. Extract by means of Haar Wavelet Transform
         BitSet extracted = StenographyEmbedding.extract(image, capacity, gamma);
 
-        // todo: 2. Decode with LDPC-code
-        Code code = getCode(capacity, eccCodeRate);
-        BitSet decoded = LdpcEncoder.decode(code, extracted, capacity);
+        // 2. Decode with LDPC-code
+        Code code = CodeCache.of(blockLength, capacity);
 
-        // todo: 3. Separate signature and 3-bit quantization perturbations
+        long start = System.currentTimeMillis();
+        BitSet decoded = LdpcEncoder.decode(code, extracted, capacity);
+        long seconds = (System.currentTimeMillis() - start) / 1000L;
+        System.out.println("Decoded in " + seconds + " s.");
+
+        // 3. Separate signature and 3-bit quantization perturbations
         List<Perturbation> perturbations = new ArrayList<>();
         BitSet extractedSignature = new BitSet();
-        int dataLength = featuresLength + publicKeyLength;
-        for (int i = 0; i < dataLength; i++) {
-            if (i < featuresLength) {
-                Perturbation perturbation = new Perturbation();
-                if (decoded.get(i * 3)) {
-                    perturbation.setBit0(true);
-                }
-                if (decoded.get(i * 3 + 1)) {
-                    perturbation.setBit1(true);
-                }
-                if (decoded.get(i * 3 + 2)) {
-                    perturbation.setBit2(true);
-                }
-                perturbations.add(perturbation);
-            } else {
-                if (decoded.get(i - featuresLength)) {
-                    extractedSignature.set(i);
-                }
+        for (int i = 0; i < featuresLength; i++) {
+            Perturbation perturbation = new Perturbation();
+            if (decoded.get(i * 3)) {
+                perturbation.setBit0(true);
+            }
+            if (decoded.get(i * 3 + 1)) {
+                perturbation.setBit1(true);
+            }
+            if (decoded.get(i * 3 + 2)) {
+                perturbation.setBit2(true);
+            }
+            perturbations.add(perturbation);
+        }
+
+        for (int i = 0; i < publicKeyLength; i++) {
+            if (decoded.get(featuresLength * 3 + i)) {
+                extractedSignature.set(i);
             }
         }
 
-        // todo: 4. Get features of authenticating image
+        // 4. Get features of authenticating image
         List<Double> features = FeaturesCalculator.features(image, sigma, featuresLength);
 
-        // todo: 5. Restore feature vector with 3-bit quantization
+        // 5. Restore feature vector with 3-bit quantization
         List<Integer> restoredFeatures = ThreeBitQuantization.restoreFeatures(features, perturbations, delta);
 
-        // todo: 6. Verify signature
+        // 6. Verify signature
         return SignatureProvider.verify(restoredFeatures, publicKey, extractedSignature);
-    }
-
-    private static Code getCode(int capacity, double eccCodeRate) {
-        int blockLength = (int) Math.floor((double) capacity / eccCodeRate);
-        Code code;
-        if (CODES.containsKey(eccCodeRate)) {
-            ConcurrentHashMap<Integer, Code> rateCodes = CODES.get(eccCodeRate);
-            if (rateCodes.containsKey(capacity)) {
-                code = rateCodes.get(capacity);
-            } else {
-                code = new Code(blockLength, capacity);
-                rateCodes.put(capacity, code);
-            }
-        } else {
-            code = new Code(blockLength, capacity);
-            CODES.put(eccCodeRate, new ConcurrentHashMap<>());
-            CODES.get(eccCodeRate).put(capacity, code);
-        }
-        return code;
     }
 
 }

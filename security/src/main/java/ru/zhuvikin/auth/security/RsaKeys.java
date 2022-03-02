@@ -20,7 +20,7 @@ public class RsaKeys {
         int pAndQLength = (int) Math.floor(length / 2);
 
         long seed1 = seedByPassphrase(passphrase);
-        BigInteger p = random(pAndQLength, seed1);
+        BigInteger p = random(pAndQLength - 1, seed1);
 
         long seed2 = seedByPassphrase(passphrase + ".");
         BigInteger q = random(pAndQLength, seed2);
