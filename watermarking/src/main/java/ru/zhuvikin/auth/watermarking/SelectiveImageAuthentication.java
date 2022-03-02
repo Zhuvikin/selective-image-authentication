@@ -9,6 +9,7 @@ import ru.zhuvikin.auth.threebitquantization.QuantizedData;
 import ru.zhuvikin.auth.threebitquantization.ThreeBitQuantization;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,9 +53,9 @@ public final class SelectiveImageAuthentication {
         // Concatenate signature and 3-bit quantization perturbations
         List<Perturbation> perturbations = quantizedData.getPerturbation();
         BitSet data = new BitSet();
-        int dataLength = perturbations.size() + privateKeyLength;
+        int dataLength = featuresLength + privateKeyLength;
         for (int i = 0; i < dataLength; i++) {
-            if (i < perturbations.size()) {
+            if (i < featuresLength) {
                 Perturbation perturbation = perturbations.get(i);
                 if (perturbation.isBit0()) {
                     data.set(i * 3);
@@ -66,7 +67,7 @@ public final class SelectiveImageAuthentication {
                     data.set(i * 3 + 2);
                 }
             } else {
-                if (signature.get(i)) {
+                if (signature.get(i - featuresLength)) {
                     data.set(i);
                 }
             }
@@ -78,24 +79,68 @@ public final class SelectiveImageAuthentication {
         BitSet encoded = LdpcEncoder.encode(code, data, dataLength);
 
         // Embed by means of Haar Wavelet Transform
-        return StenographyEmbedding.embed(image, encoded, featuresLength, gamma);
+        return StenographyEmbedding.embed(image, encoded, capacity, gamma);
     }
 
     public static boolean authenticate(BufferedImage image, WatermarkingParameters parameters, RsaKeys.PublicKey publicKey) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        if (width != height) {
+            throw new IllegalArgumentException("Only rect images are currently supported");
+        }
+        int publicKeyLength = publicKey.getLength();
+
+        int hwtDomainDimension = (int) Math.floor((double) width / Math.pow(2, HWT_LEVELS));
+        int domainCapacity = (int) Math.pow(hwtDomainDimension, 2);
+        int capacity = domainCapacity * 2;
+
+        double eccCodeRate = parameters.getEccCodeRate();
+        int blockLength = (int) Math.floor((double) capacity / eccCodeRate);
+        int featuresLength = (int) Math.floor((double) (blockLength - publicKeyLength) / 3.0d);
+
+        double sigma = parameters.getSigma();
+        double delta = parameters.getDelta();
+        double gamma = parameters.getGamma();
 
         // todo: 1. Extract by means of Haar Wavelet Transform
+        BitSet extracted = StenographyEmbedding.extract(image, capacity, gamma);
 
         // todo: 2. Decode with LDPC-code
+        Code code = getCode(capacity, eccCodeRate);
+        BitSet decoded = LdpcEncoder.decode(code, extracted, capacity);
 
         // todo: 3. Separate signature and 3-bit quantization perturbations
+        List<Perturbation> perturbations = new ArrayList<>();
+        BitSet extractedSignature = new BitSet();
+        int dataLength = featuresLength + publicKeyLength;
+        for (int i = 0; i < dataLength; i++) {
+            if (i < featuresLength) {
+                Perturbation perturbation = new Perturbation();
+                if (decoded.get(i * 3)) {
+                    perturbation.setBit0(true);
+                }
+                if (decoded.get(i * 3 + 1)) {
+                    perturbation.setBit1(true);
+                }
+                if (decoded.get(i * 3 + 2)) {
+                    perturbation.setBit2(true);
+                }
+                perturbations.add(perturbation);
+            } else {
+                if (decoded.get(i - featuresLength)) {
+                    extractedSignature.set(i);
+                }
+            }
+        }
 
-        // todo: 4. Get features of authenticated image
+        // todo: 4. Get features of authenticating image
+        List<Double> features = FeaturesCalculator.features(image, sigma, featuresLength);
 
         // todo: 5. Restore feature vector with 3-bit quantization
+        List<Integer> restoredFeatures = ThreeBitQuantization.restoreFeatures(features, perturbations, delta);
 
         // todo: 6. Verify signature
-
-        return false;
+        return SignatureProvider.verify(restoredFeatures, publicKey, extractedSignature);
     }
 
     private static Code getCode(int capacity, double eccCodeRate) {

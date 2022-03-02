@@ -4,11 +4,9 @@ import org.junit.Test;
 import ru.zhuvikin.auth.code.Code;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
-import ru.zhuvikin.auth.matrix.sparse.modulo2.BitSequence;
 import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.BitSet;
 
 import static org.junit.Assert.assertEquals;
 import static ru.zhuvikin.auth.ldpc.LdpcEncoder.decode;
@@ -19,29 +17,26 @@ public class LdpcEncoderTest {
     private static final Code CODE = new Code(12, 24, 1);
 
     @Test
-    public void testEncode() throws Exception {
-        BitSequence bitSequence = new BitSequence(12).set(0).set(1).set(6).set(8).set(11);
+    public void testEncode() {
+        BitSet bitSequence = bitSet(0, 1, 6, 8, 11);
 
-        List<BitSequence> encoded = encode(CODE, bitSequence);
+        BitSet encoded = encode(CODE, bitSequence, 12);
 
-        assertEquals(1, encoded.size());
-        BitSequence sequence = new BitSequence(24).set(0).set(1).set(3).set(6).set(9).set(10).set(12).set(18).set(20).set(23);
-        assertEquals(sequence, encoded.get(0));
+        BitSet sequence = bitSet(0, 1, 3, 6, 9, 10, 12, 18, 20, 23);
+        assertEquals(sequence, encoded);
     }
 
     @Test
-    public void testDecode() throws Exception {
-        BitSequence bitSequence = new BitSequence(12).set(2).set(8).set(9).set(10);
+    public void testDecode() {
+        BitSet bitSequence = bitSet(2, 8, 9, 10);
 
-        List<BitSequence> encoded = encode(CODE, bitSequence);
+        BitSet encoded = encode(CODE, bitSequence, 12);
 
-        assertEquals(1, encoded.size());
+        BitSet expectedEncoded = bitSet(0, 11, 12, 14, 20, 21, 22);
 
-        BitSequence expectedEncoded = new BitSequence(24).set(0).set(11).set(12).set(14).set(20).set(21).set(22);
+        assertEquals(expectedEncoded, encoded);
 
-        assertEquals(expectedEncoded, encoded.get(0));
-
-        BitSequence decoded = decode(CODE, encoded);
+        BitSet decoded = decode(CODE, encoded, 24);
         assertEquals(bitSequence, decoded);
     }
 
@@ -141,7 +136,7 @@ public class LdpcEncoderTest {
         assertEquals(expectedUpper, decomposition.getUpper());
 
         // 1 0 1 0 0 0 0 0 0 0 0 0 0 1 1 0
-        BitSequence source = new BitSequence(16).set(0).set(2).set(13).set(14);
+        BitSet source = bitSet(0, 2, 13, 14);
 
         System.out.println("source = " + source);
 
@@ -149,47 +144,57 @@ public class LdpcEncoderTest {
         code.setParityCheckMatrix(parityCheckMatrix);
         code.setGeneratorMatrix(parityCheckMatrix.decompose());
 
-        List<BitSequence> codeWords = encode(code, source);
+        BitSet encoded = encode(code, source, 16);
 
-        BitSequence encodedExpected = new BitSequence(32).set(2).set(3).set(4).set(5).set(6).set(9).set(10)
-                .set(11).set(12).set(13).set(16).set(18).set(29).set(30);
+        BitSet encodedExpected = bitSet(2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 16, 18, 29, 30);
 
-        System.out.println("encoded = " + codeWords);
+        System.out.println("encoded = " + encoded);
 
-        BitSequence encoded = codeWords.get(0);
         assertEquals(encodedExpected, encoded);
 
-        BitSequence decoded = decode(code, codeWords);
+        BitSet decoded = decode(code, encoded, 32);
         System.out.println("decoded = " + decoded);
         assertEquals(source, decoded);
 
         // ------------------------------------------------------------------------
 
-        BitSequence tampered = encoded.clone().set(0);
+        BitSet tampered = (BitSet) encoded.clone();
+        tampered.set(0);
         System.out.println("tampered = " + tampered);
 
-        decoded = decode(code, Collections.singletonList(tampered));
+        decoded = decode(code, tampered, 32);
         System.out.println("decoded = " + decoded);
         assertEquals(source, decoded);
 
         // ------------------------------------------------------------------------
 
-        tampered = encoded.clone().set(28);
+        tampered = (BitSet) encoded.clone();
+        tampered.set(28);
         System.out.println("tampered = " + tampered);
 
-        decoded = decode(code, Collections.singletonList(tampered));
+        decoded = decode(code, tampered, 32);
         System.out.println("decoded = " + decoded);
         assertEquals(source, decoded);
 
         // ------------------------------------------------------------------------
 
-        tampered = encoded.clone().set(28).set(31);
+        tampered = (BitSet) encoded.clone();
+        tampered.set(28);
+        tampered.set(31);
+
         System.out.println("tampered = " + tampered);
 
-        decoded = decode(code, Collections.singletonList(tampered));
+        decoded = decode(code, tampered, 32);
         System.out.println("decoded = " + decoded);
         assertEquals(source, decoded);
     }
 
+    private static BitSet bitSet(int... indicies) {
+        BitSet bitSet = new BitSet();
+        for (int index : indicies) {
+            bitSet.set(index);
+        }
+        return bitSet;
+    }
 
 }
