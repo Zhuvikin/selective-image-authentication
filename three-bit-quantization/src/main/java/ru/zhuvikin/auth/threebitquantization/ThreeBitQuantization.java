@@ -14,8 +14,8 @@ public final class ThreeBitQuantization {
             perturbations.add(new Perturbation());
         }
 
-        for (int j = 0; j < featuresSize; j++) {
-            quantizedFeatures.set(j, (int) Math.floor(features.get(j) / delta));
+        for (Double feature : features) {
+            quantizedFeatures.add((int) Math.floor(feature / delta));
         }
 
         for (int j = 0; j < featuresSize; j++) {
@@ -56,21 +56,21 @@ public final class ThreeBitQuantization {
 
         for (int i = 0; i < featuresSize; i++) {
 
-            int bExtr = (extractedPerturbations.get(i).isBit1() ? 1 : 0) + 2 * (extractedPerturbations.get(i).isBit0() ? 1 : 0);
-            int bCalc = (estimatePerturbations.get(i).isBit1() ? 1 : 0) + 2 * (estimatePerturbations.get(i).isBit0() ? 1 : 0);
+            int extracted = (extractedPerturbations.get(i).isBit1() ? 1 : 0) + 2 * (extractedPerturbations.get(i).isBit0() ? 1 : 0);
+            int calculated = (estimatePerturbations.get(i).isBit1() ? 1 : 0) + 2 * (estimatePerturbations.get(i).isBit0() ? 1 : 0);
 
-            int rB = (bExtr + 1) % 4;
+            int rB = (extracted + 1) % 4;
             if (rB < 0) rB += 4;
             if (rB > 3) rB -= 4;
 
-            int lB = (bExtr - 1) % 4;
+            int lB = (extracted - 1) % 4;
             if (lB < 0) lB += 4;
             if (lB > 3) lB -= 4;
 
             int a;
-            if (bCalc == lB) {
+            if (calculated == lB) {
                 a = 0;
-            } else if (bCalc == rB) {
+            } else if (calculated == rB) {
                 a = 1;
             } else {
                 a = 2;
