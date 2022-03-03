@@ -11,8 +11,14 @@ import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.io.File.separator;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @Getter
 @AllArgsConstructor
@@ -66,7 +72,7 @@ public class CodeCache {
         String cacheFolder = checkCacheFolder();
 
         String codeFileName = "LDPC_" + code.getRank() + "_" + code.getLength() + ".code";
-        File codeFile = new File(cacheFolder + File.separator + codeFileName);
+        File codeFile = new File(cacheFolder + separator + codeFileName);
 
         String contents = JSON_MAPPER.writeValueAsString(code);
         if (!codeFile.createNewFile()) {
@@ -83,6 +89,22 @@ public class CodeCache {
     @SneakyThrows
     private static void loadCodeCaches() {
         String cacheFolderPath = checkCacheFolder();
+
+        ClassLoader classLoader = CodeCache.class.getClassLoader();
+        URL internalCacheFolder = classLoader.getResource("cache");
+        if (internalCacheFolder == null) {
+            throw new RuntimeException("Failed to load cached LDPC codes");
+        }
+        File cache = new File(internalCacheFolder.toURI());
+        File[] cacheFiles = cache.listFiles();
+        if (cacheFiles != null) {
+            for (File cacheFile : cacheFiles) {
+                Path path = cacheFile.toPath();
+                Path fileName = path.getFileName();
+                Files.copy(path, Paths.get(cacheFolderPath + separator + fileName), REPLACE_EXISTING);
+            }
+        }
+
         File cacheFolder = new File(cacheFolderPath);
         File[] files = cacheFolder.listFiles();
         if (files != null) {
@@ -111,7 +133,7 @@ public class CodeCache {
 
     private static String checkCacheFolder() {
         String userHome = System.getProperty("user.home");
-        String cacheFolder = userHome + File.separator + ".selective-image-authentication" + File.separator + "cache";
+        String cacheFolder = userHome + separator + ".selective-image-authentication" + separator + "cache";
         File cacheFolderFile = new File(cacheFolder);
         if (!cacheFolderFile.exists()) {
             if (!cacheFolderFile.mkdirs()) {
