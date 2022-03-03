@@ -460,20 +460,7 @@ public class Modulo2Matrix implements Matrix {
 
     @Override
     public String toString() {
-        StringBuilder out = new StringBuilder();
-        out.append("Matrix(").append(width).append(", ").append(height).append(") :\n");
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (isSet(x, y)) {
-                    out.append("1 ");
-                } else {
-                    out.append("0 ");
-                }
-            }
-            out.append("\n");
-        }
-        out.append("\n");
-        return out.toString();
+        return "Modulo2Matrix(" + width + ", " + height + ")";
     }
 
 }

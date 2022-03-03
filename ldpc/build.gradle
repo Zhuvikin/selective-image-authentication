@@ -1,6 +1,8 @@
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.16.18'
 
+    compile 'commons-io:commons-io:2.4'
+
     compile project(':matrix')
 
     testCompile 'junit:junit:4.12'

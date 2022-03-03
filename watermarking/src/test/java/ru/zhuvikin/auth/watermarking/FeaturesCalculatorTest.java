@@ -37,7 +37,7 @@ public class FeaturesCalculatorTest {
         assertEquals(LENGTH, features2.size());
 
         for (int i = 0; i < features1.size(); i++) {
-            assertEquals(features1.get(i), features2.get(i), 5);
+            assertEquals(features1.get(i), features2.get(i), 6);
         }
     }
 

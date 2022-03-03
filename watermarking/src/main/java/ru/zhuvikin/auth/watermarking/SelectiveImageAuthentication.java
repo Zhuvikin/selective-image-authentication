@@ -73,11 +73,7 @@ public final class SelectiveImageAuthentication {
 
         // Encode with LDPC-code
         Code code = CodeCache.of(blockLength, capacity);
-
-        long start = System.currentTimeMillis();
         BitSet encoded = LdpcEncoder.encode(code, data, dataLength);
-        long seconds = (System.currentTimeMillis() - start) / 1000L;
-        System.out.println("Encoded in " + seconds + " s.");
 
         // Embed by means of Haar Wavelet Transform
         return StenographyEmbedding.embed(image, encoded, capacity, gamma);
@@ -108,11 +104,7 @@ public final class SelectiveImageAuthentication {
 
         // 2. Decode with LDPC-code
         Code code = CodeCache.of(blockLength, capacity);
-
-        long start = System.currentTimeMillis();
         BitSet decoded = LdpcEncoder.decode(code, extracted, capacity);
-        long seconds = (System.currentTimeMillis() - start) / 1000L;
-        System.out.println("Decoded in " + seconds + " s.");
 
         // 3. Separate signature and 3-bit quantization perturbations
         List<Perturbation> perturbations = new ArrayList<>();

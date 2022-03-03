@@ -71,3 +71,6 @@ hs_err_pid*
 /watermarking/lena_wm.jpg
 /watermarking/lena_embedded.jpg
 /watermarking/lena_watermarked.jpg
+
+.css
+.html
