@@ -2,10 +2,12 @@ package ru.zhuvikin.auth.matrix.sparse;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Getter
+@Setter
 @AllArgsConstructor
 public class LUDecomposition {
 
@@ -15,7 +17,7 @@ public class LUDecomposition {
     private List<Integer> rows;
     private List<Integer> columns;
 
-    private final Matrix left;
-    private final Matrix upper;
+    private Matrix left;
+    private Matrix upper;
 
 }

@@ -22,10 +22,14 @@ public class SelectiveImageAuthenticationTest {
     private static final String ORIGINAL_NAME = "lena.jpg";
     private static final String WATERMARKED_NAME = "lena_watermarked.jpg";
 
-    private static final URL LENA_URL = FeaturesCalculatorTest.class.getClassLoader().getResource(ORIGINAL_NAME);
-    private static final URL LENA_WM_URL = FeaturesCalculatorTest.class.getClassLoader().getResource(WATERMARKED_NAME);
+    private static final ClassLoader CLASS_LOADER = SelectiveImageAuthenticationTest.class.getClassLoader();
 
-    private static final WatermarkingParameters WATERMARKING_PARAMETERS = WatermarkingParameters.builder().build();
+    private static final URL LENA_URL = CLASS_LOADER.getResource(ORIGINAL_NAME);
+    private static final URL LENA_WM_URL = CLASS_LOADER.getResource(WATERMARKED_NAME);
+
+    private static final WatermarkingParameters WATERMARKING_PARAMETERS = WatermarkingParameters.builder()
+            .gamma(2)
+            .build();
 
     @Test
     @SneakyThrows

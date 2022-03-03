@@ -35,6 +35,8 @@ public interface Matrix {
 
     Matrix multiply(Matrix matrix);
 
+    Vector multiply(Vector vector);
+
     Matrix addRow(int toRow, Matrix matrix, int row);
 
     Matrix transpose();

@@ -13,12 +13,12 @@ public class WatermarkingParameters {
     private double eccCodeRate = 2;
 
     @Builder.Default
-    private double sigma = 2;
+    private double sigma = 10;
 
     @Builder.Default
     private double gamma = 3;
 
     @Builder.Default
-    private double delta = 0.5;
+    private double delta = 10;
 
 }

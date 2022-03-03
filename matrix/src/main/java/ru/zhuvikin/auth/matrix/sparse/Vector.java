@@ -52,7 +52,7 @@ public class Vector {
         if (vertical) {
             return matrix.getHeight();
         } else {
-            return matrix.getHeight();
+            return matrix.getWidth();
         }
     }
 
@@ -86,4 +86,13 @@ public class Vector {
             return matrix.toString();
         }
     }
+
+    public int cardinality() {
+        if (vertical) {
+            return matrix.getRows().size();
+        } else {
+            return matrix.getColumns().size();
+        }
+    }
+
 }

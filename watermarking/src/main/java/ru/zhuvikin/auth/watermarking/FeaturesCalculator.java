@@ -88,8 +88,7 @@ public final class FeaturesCalculator {
         return image;
     }
 
-    private static BufferedImage getGrayScale(BufferedImage inputImage) {
-        if (inputImage.getType() == BufferedImage.TYPE_BYTE_GRAY) return inputImage;
+    public static BufferedImage getGrayScale(BufferedImage inputImage) {
         BufferedImage img = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         Graphics g = img.getGraphics();
         g.drawImage(inputImage, 0, 0, null);

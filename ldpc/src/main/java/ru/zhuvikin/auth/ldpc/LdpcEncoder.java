@@ -189,14 +189,14 @@ public final class LdpcEncoder {
     }
 
     private static boolean check(Matrix parityCheckMatrix, boolean[] codewordGuess) {
-        Matrix matrix = new Modulo2Matrix(1, codewordGuess.length);
+        Vector vector = new Vector(codewordGuess.length, true);
         for (int i = 0; i < codewordGuess.length; i++) {
             if (codewordGuess[i]) {
-                matrix.set(0, i);
+                vector.set(i);
             }
         }
-        Matrix syndrome = parityCheckMatrix.multiply(matrix);
-        return syndrome.getColumns().isEmpty();
+        Vector syndrome = parityCheckMatrix.multiply(vector);
+        return syndrome.cardinality() == 0;
     }
 
     private static void initPropagation(Matrix parityCheckMatrix, double[] likelihoodRatios, boolean[] decoded, double[] bitProbabilities) {

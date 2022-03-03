@@ -54,9 +54,9 @@ public final class StenographyEmbedding {
         }
 
         BitSet data = new BitSet();
-        int bitIndex = 0;
 
-        extractFromDomain(gamma, domain, data, bitIndex, 0, 64, 64, 128);
+        int bitIndex = 0;
+        bitIndex = extractFromDomain(gamma, domain, data, bitIndex, 0, 64, 64, 128);
         extractFromDomain(gamma, domain, data, bitIndex, 64, 128, 0, 64);
 
         int repeated = (int) Math.ceil((double) data.length() / (double) length);
@@ -95,7 +95,7 @@ public final class StenographyEmbedding {
         return result;
     }
 
-    private static void extractFromDomain(double gamma, double[][] domain, BitSet data, int bitIndex, int fromJ, int toJ, int fromI, int toI) {
+    private static int extractFromDomain(double gamma, double[][] domain, BitSet data, int bitIndex, int fromJ, int toJ, int fromI, int toI) {
         for (int j = fromJ; j < toJ; j++) {
             for (int i = fromI; i < toI; i++) {
                 if (domain[i][j] - gamma * (Math.round(domain[i][j] / gamma)) >= 0) {
@@ -104,6 +104,7 @@ public final class StenographyEmbedding {
                 bitIndex++;
             }
         }
+        return bitIndex;
     }
 
     private static boolean[][] mapData(BitSet binary, int length, int w, int h) {
@@ -115,6 +116,8 @@ public final class StenographyEmbedding {
     }
 
     private static double[][] getPixels(BufferedImage image) {
+        image = FeaturesCalculator.getGrayScale(image);
+
         double[][] pixels = new double[image.getWidth()][image.getHeight()];
         for (int i = 0; i < pixels.length; i++) {
             for (int j = 0; j < pixels[0].length; j++) {

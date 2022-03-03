@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.NavigableMap;
 
 @Getter
 @Setter
@@ -58,7 +59,12 @@ public class Element {
         if (row < 0) {
             return null;
         }
-        Map.Entry<Integer, Element> entry = matrix.getColumns().get(column).higherEntry(row);
+        NavigableMap<Integer, NavigableMap<Integer, Element>> columns = matrix.getColumns();
+        NavigableMap<Integer, Element> map = columns.get(column);
+        if (map == null) {
+            return new Element(column, -1, matrix);
+        }
+        Map.Entry<Integer, Element> entry = map.higherEntry(row);
         if (entry == null) {
             return new Element(column, -1, matrix);
         }
@@ -69,7 +75,12 @@ public class Element {
         if (row < 0) {
             return null;
         }
-        Map.Entry<Integer, Element> entry = matrix.getColumns().get(column).lowerEntry(row);
+        NavigableMap<Integer, NavigableMap<Integer, Element>> columns = matrix.getColumns();
+        NavigableMap<Integer, Element> map = columns.get(column);
+        if (map == null) {
+            return new Element(column, -1, matrix);
+        }
+        Map.Entry<Integer, Element> entry = map.lowerEntry(row);
         if (entry == null) {
             return new Element(column, -1, matrix);
         }

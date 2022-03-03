@@ -5,15 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import ru.zhuvikin.auth.ldpc.ParityCheckMatrix;
-import ru.zhuvikin.auth.matrix.sparse.Element;
-import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Files;
-import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
@@ -95,23 +93,20 @@ public class CodeCache {
                     CODES.putIfAbsent(code.getRank(), new ConcurrentHashMap<>());
                     ConcurrentHashMap<Integer, Code> map = CODES.get(code.getRank());
 
-                    Matrix parityCheckMatrix = code.getParityCheckMatrix();
-                    parityCheckMatrix.getColumns().values().forEach(c -> c.values().forEach(e -> e.setMatrix(parityCheckMatrix)));
-                    parityCheckMatrix.getRows().values().forEach(r -> r.values().forEach(e -> e.setMatrix(parityCheckMatrix)));
-
-                    LUDecomposition generatorMatrix = code.getGeneratorMatrix();
-                    Matrix left = generatorMatrix.getLeft();
-                    left.getColumns().values().forEach(c -> c.values().forEach(e -> e.setMatrix(left)));
-                    left.getRows().values().forEach(r -> r.values().forEach(e -> e.setMatrix(left)));
-
-                    Matrix upper = generatorMatrix.getUpper();
-                    upper.getColumns().values().forEach(c -> c.values().forEach(e -> e.setMatrix(upper)));
-                    upper.getRows().values().forEach(r -> r.values().forEach(e -> e.setMatrix(upper)));
+                    code.setParityCheckMatrix(restoreMatrix(code.getParityCheckMatrix()));
+                    code.getGeneratorMatrix().setLeft(restoreMatrix(code.getGeneratorMatrix().getLeft()));
+                    code.getGeneratorMatrix().setUpper(restoreMatrix(code.getGeneratorMatrix().getUpper()));
 
                     map.putIfAbsent(code.getLength(), code);
                 }
             }
         }
+    }
+
+    private static Matrix restoreMatrix(Matrix matrix) {
+        Matrix matrixRestored = new Modulo2Matrix(matrix.getWidth(), matrix.getHeight());
+        matrix.getColumns().values().forEach(c -> c.values().forEach(e -> matrixRestored.set(e.getColumn(), e.getRow())));
+        return matrixRestored;
     }
 
     private static String checkCacheFolder() {

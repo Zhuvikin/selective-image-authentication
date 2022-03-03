@@ -5,6 +5,7 @@ import lombok.Setter;
 import ru.zhuvikin.auth.matrix.sparse.Element;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -210,6 +211,24 @@ public class Modulo2Matrix implements Matrix {
 
                 if (b) {
                     result.set(j, i);
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Vector multiply(Vector vector) {
+        Vector result = new Vector(height, true);
+        for (int j = 0; j < vector.size(); j++) {
+            if (vector.isSet(j)) {
+                for (Element e = firstInColumn(j); e.bottom() != null; e = e.bottom()) {
+                    int row = e.getRow();
+                    if (result.isSet(row)) {
+                        result.remove(e.getRow());
+                    } else {
+                        result.set(row);
+                    }
                 }
             }
         }
