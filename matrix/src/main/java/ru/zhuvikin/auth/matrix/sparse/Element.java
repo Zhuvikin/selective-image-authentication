@@ -37,9 +37,14 @@ public class Element {
         if (column < 0) {
             return null;
         }
-        Map.Entry<Integer, Element> entry = matrix.getRows().get(row).higherEntry(column);
+        NavigableMap<Integer, NavigableMap<Integer, Element>> rows = matrix.getRows();
+        NavigableMap<Integer, Element> map = rows.get(row);
+        if (map == null) {
+            return getBoundRowElement(row, matrix);
+        }
+        Map.Entry<Integer, Element> entry = map.higherEntry(column);
         if (entry == null) {
-            return new Element(-1, row, matrix);
+            return getBoundRowElement(row, matrix);
         }
         return entry.getValue();
     }
@@ -48,9 +53,14 @@ public class Element {
         if (column < 0) {
             return null;
         }
-        Map.Entry<Integer, Element> entry = matrix.getRows().get(row).lowerEntry(column);
+        NavigableMap<Integer, NavigableMap<Integer, Element>> rows = matrix.getRows();
+        NavigableMap<Integer, Element> map = rows.get(row);
+        if (map == null) {
+            return getBoundRowElement(row, matrix);
+        }
+        Map.Entry<Integer, Element> entry = map.lowerEntry(column);
         if (entry == null) {
-            return new Element(-1, row, matrix);
+            return getBoundRowElement(row, matrix);
         }
         return entry.getValue();
     }
@@ -62,11 +72,11 @@ public class Element {
         NavigableMap<Integer, NavigableMap<Integer, Element>> columns = matrix.getColumns();
         NavigableMap<Integer, Element> map = columns.get(column);
         if (map == null) {
-            return new Element(column, -1, matrix);
+            return getColumnBoundElement(column, matrix);
         }
         Map.Entry<Integer, Element> entry = map.higherEntry(row);
         if (entry == null) {
-            return new Element(column, -1, matrix);
+            return getColumnBoundElement(column, matrix);
         }
         return entry.getValue();
     }
@@ -78,11 +88,11 @@ public class Element {
         NavigableMap<Integer, NavigableMap<Integer, Element>> columns = matrix.getColumns();
         NavigableMap<Integer, Element> map = columns.get(column);
         if (map == null) {
-            return new Element(column, -1, matrix);
+            return getColumnBoundElement(column, matrix);
         }
         Map.Entry<Integer, Element> entry = map.lowerEntry(row);
         if (entry == null) {
-            return new Element(column, -1, matrix);
+            return getColumnBoundElement(column, matrix);
         }
         return entry.getValue();
     }
@@ -95,4 +105,13 @@ public class Element {
     public String toString() {
         return "{" + column + ", " + row + '}';
     }
+
+    private static Element getColumnBoundElement(int column, Matrix matrix) {
+        return new Element(column, -1, matrix);
+    }
+
+    private static Element getBoundRowElement(int row, Matrix matrix) {
+        return new Element(-1, row, matrix);
+    }
+
 }

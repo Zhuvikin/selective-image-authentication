@@ -55,28 +55,28 @@ public class CodeCache {
 
     private static Code getCode(int blockLength, int rank) {
         Code code;
-        boolean newCache = false;
         if (CODES.containsKey(rank)) {
             ConcurrentHashMap<Integer, Code> rateCodes = CODES.get(rank);
             if (rateCodes.containsKey(blockLength)) {
                 code = rateCodes.get(blockLength);
             } else {
-                code = new Code(blockLength, rank);
+                code = generateNewCode(blockLength, rank);
                 rateCodes.put(blockLength, code);
-                newCache = true;
+                cacheCode(code);
             }
         } else {
-            code = new Code(blockLength, rank);
+            code = generateNewCode(blockLength, rank);
             CODES.put(rank, new ConcurrentHashMap<>());
             CODES.get(rank).put(blockLength, code);
-            newCache = true;
-        }
-
-        if (newCache) {
-            generateMatrices(code);
             cacheCode(code);
         }
         return code;
+    }
+
+    static Code generateNewCode(int blockLength, int rank) {
+        Code result = new Code(blockLength, rank);
+        generateMatrices(result);
+        return result;
     }
 
     @SneakyThrows

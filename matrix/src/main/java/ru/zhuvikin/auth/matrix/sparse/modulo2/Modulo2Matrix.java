@@ -357,9 +357,7 @@ public class Modulo2Matrix implements Matrix {
                     next = first.bottom();
                     k = first.getRow();
                     if (rowsInv.get(k) > i && e != null) {
-                        long time = System.nanoTime();
                         B.addRow(k, B, e.getRow());
-                        r += System.nanoTime() - time;
                         rowsAdded++;
                         left.set(i, k);
                     } else if (rowsInv.get(k) < i) {

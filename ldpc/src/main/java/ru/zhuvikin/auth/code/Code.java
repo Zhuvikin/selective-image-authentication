@@ -1,11 +1,13 @@
 package ru.zhuvikin.auth.code;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
 
 @Getter
+@EqualsAndHashCode
 public class Code {
 
     private int length;

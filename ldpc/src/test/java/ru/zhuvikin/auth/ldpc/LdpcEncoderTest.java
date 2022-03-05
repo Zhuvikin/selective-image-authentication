@@ -29,8 +29,8 @@ public class LdpcEncoderTest {
 
         BitSet encoded = encode(CODE, bitSequence, 12);
 
-        BitSet sequence = bitSet(0, 1, 3, 6, 9, 10, 12, 18, 20, 23);
-        assertEquals(sequence, encoded);
+        BitSet expected = bitSet(1, 9, 10, 12, 13, 14, 18, 20, 23);
+        assertEquals(expected, encoded);
     }
 
     @Test
@@ -39,7 +39,7 @@ public class LdpcEncoderTest {
 
         BitSet encoded = encode(CODE, bitSequence, 12);
 
-        BitSet expectedEncoded = bitSet(0, 11, 12, 14, 20, 21, 22);
+        BitSet expectedEncoded = bitSet(2, 3, 8, 11, 20, 21, 22);
 
         assertEquals(expectedEncoded, encoded);
 
