@@ -2,6 +2,7 @@ package ru.zhuvikin.auth.security;
 
 import org.junit.Test;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
@@ -19,13 +20,22 @@ public class SignatureProviderTest {
     private static final int SIGNATURE_LENGTH = 64;
 
     private static final RsaKeys RSA_KEYS = new RsaKeys(PASSWORD, SIGNATURE_LENGTH);
+    private static final RsaKeys RSA_KEYS_1024 = new RsaKeys(PASSWORD, 1024);
+
+    @Test
+    public void testConvertBitSetToInteger() {
+        BigInteger expected = new BigInteger("132");
+        BitSet bitSet = SignatureProvider.convert(expected);
+        BigInteger integer = SignatureProvider.convert(bitSet);
+        assertEquals(expected, integer);
+    }
 
     @Test
     public void testSign() throws Exception {
 
         BitSet signature = sign(FEATURES, RSA_KEYS.getPrivateKey());
 
-        List<Integer> expectedOnes = Arrays.asList(0, 1, 2, 4, 8, 9, 12, 14, 15, 18, 20, 21, 25, 27, 28, 29, 30, 31, 34, 35, 37, 38, 40, 41, 42, 43, 44, 46, 47, 52, 53, 54, 56, 57, 58, 59, 60, 62, 63);
+        List<Integer> expectedOnes = Arrays.asList(1, 4, 5, 9, 10, 11, 14, 17, 18, 19, 21, 23, 29, 32, 36, 38, 39, 40, 41, 44, 46, 47, 57, 61, 64);
         BitSet expected = new BitSet();
         expectedOnes.forEach(expected::set);
 
@@ -33,10 +43,19 @@ public class SignatureProviderTest {
     }
 
     @Test
-    public void testVerify() throws Exception {
+    public void testVerify1() throws Exception {
         BitSet signature = sign(FEATURES, RSA_KEYS.getPrivateKey());
 
         boolean authentic = verify(FEATURES, RSA_KEYS.getPublicKey(), signature);
+
+        assertTrue(authentic);
+    }
+
+    @Test
+    public void testVerify2() throws Exception {
+        BitSet signature = sign(FEATURES, RSA_KEYS_1024.getPrivateKey());
+
+        boolean authentic = verify(FEATURES, RSA_KEYS_1024.getPublicKey(), signature);
 
         assertTrue(authentic);
     }

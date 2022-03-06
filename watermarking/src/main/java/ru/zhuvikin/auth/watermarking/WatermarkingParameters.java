@@ -10,7 +10,7 @@ import lombok.Setter;
 public class WatermarkingParameters {
 
     @Builder.Default
-    private double eccCodeRate = 2;
+    private double eccCodeRate = 0.5;
 
     @Builder.Default
     private double sigma = 10;

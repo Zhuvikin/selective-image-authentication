@@ -13,33 +13,35 @@ public final class SignatureProvider {
         int signatureLength = privateKey.getLength();
 
         BitSet hash = hash(quantizedFeatures, signatureLength);
-        BigInteger hashInteger = new BigInteger(1, hash.toByteArray());
+        BigInteger hashInteger = convert(hash);
 
         BigInteger modulo = privateKey.getModulo();
         BigInteger privateExponent = privateKey.getPrivateExponent();
 
         BigInteger signature = hashInteger.modPow(privateExponent, modulo);
-        return BitSet.valueOf(signature.toByteArray());
+        return convert(signature);
     }
 
     public static boolean verify(List<Integer> quantizedFeatures, RsaKeys.PublicKey publicKey, BitSet signature) {
         int signatureLength = publicKey.getLength();
 
         BitSet hash = hash(quantizedFeatures, signatureLength);
+        BitSet signatureWithTrailingBit = new BitSet();
+        signature.stream().forEach(signatureWithTrailingBit::set);
+        signatureWithTrailingBit.set(signatureLength);
 
-        BigInteger signatureInteger = new BigInteger(1, signature.toByteArray());
+        BigInteger signatureInteger = convert(signatureWithTrailingBit);
 
         BigInteger modulo = publicKey.getModulo();
         BigInteger exponent = publicKey.getExponent();
 
         BigInteger checked = signatureInteger.modPow(exponent, modulo);
-        BitSet checkBits = BitSet.valueOf(checked.toByteArray());
 
-        return checkBits.equals(hash);
+        return checked.equals(convert(hash));
     }
 
     @SneakyThrows
-    public static BitSet hash(String message, int length) {
+    static BitSet hash(String message, int length) {
         BitSet bitSet = BitSet.valueOf(message.getBytes("UTF-8"));
         return hash(bitSet, length);
     }
@@ -65,6 +67,23 @@ public final class SignatureProvider {
             result.set(i, digest.get(i % 512));
         }
         return result;
+    }
+
+    public static BitSet convert(BigInteger bigInteger) {
+        byte[] bia = bigInteger.toByteArray();
+        int l = bia.length;
+        byte[] bsa = new byte[l + 1];
+        System.arraycopy(bia, 0, bsa, 0, l);
+        bsa[l] = 0x01;
+        return BitSet.valueOf(bsa);
+    }
+
+    public static BigInteger convert(BitSet bitSet) {
+        byte[] bsa = bitSet.toByteArray();
+        int l = bsa.length - 0x01;
+        byte[] bia = new byte[l];
+        System.arraycopy(bsa, 0, bia, 0, l);
+        return new BigInteger(bia);
     }
 
 }

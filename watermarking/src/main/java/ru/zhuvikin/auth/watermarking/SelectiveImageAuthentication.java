@@ -31,7 +31,7 @@ public final class SelectiveImageAuthentication {
         int capacity = domainCapacity * 2;
 
         double eccCodeRate = parameters.getEccCodeRate();
-        int blockLength = (int) Math.floor((double) capacity / eccCodeRate);
+        int blockLength = (int) Math.floor((double) capacity * eccCodeRate);
         int featuresLength = (int) Math.floor((double) (blockLength - privateKeyLength) / 3.0d);
 
         double sigma = parameters.getSigma();
@@ -92,7 +92,7 @@ public final class SelectiveImageAuthentication {
         int capacity = domainCapacity * 2;
 
         double eccCodeRate = parameters.getEccCodeRate();
-        int blockLength = (int) Math.floor((double) capacity / eccCodeRate);
+        int blockLength = (int) Math.floor((double) capacity * eccCodeRate);
         int featuresLength = (int) Math.floor((double) (blockLength - publicKeyLength) / 3.0d);
 
         double sigma = parameters.getSigma();

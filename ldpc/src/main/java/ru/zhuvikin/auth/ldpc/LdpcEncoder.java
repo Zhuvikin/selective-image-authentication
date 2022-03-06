@@ -23,14 +23,13 @@ public final class LdpcEncoder {
     private static final double BSC_ERROR_PROBABILITY = 0.1d;
 
     public static BitSet encode(Code code, BitSet messageBits, int bitsLength) {
-        int length = code.getLength();
-        int rank = code.getRank();
-        int blockLength = rank - length;
-        int words = (int) Math.ceil(bitsLength / blockLength);
-        int bits = words * blockLength;
+        int informationBits = code.getLength();
+        int codeBits = code.getRank();
+        int words = (int) Math.ceil((double) bitsLength / (double) informationBits);
+        int bits = words * informationBits;
 
         BitSequence bitSet = new BitSequence(bits);
-        for (int i = 0; i < bitsLength; i++) {
+        for (int i = 0; i < bits; i++) {
             if (messageBits.get(i)) {
                 bitSet.set(i);
             }
@@ -38,11 +37,11 @@ public final class LdpcEncoder {
 
         BitSet encoded = new BitSet();
         for (int wordIndex = 0; wordIndex < words; wordIndex++) {
-            BitSequence blockBits = bitSet.subSequence(wordIndex * blockLength, (wordIndex + 1) * blockLength);
+            BitSequence blockBits = bitSet.subSequence(wordIndex * informationBits, (wordIndex + 1) * informationBits);
             BitSet word = encodeBlock(blockBits, code);
-            for (int i = 0; i < rank; i++) {
+            for (int i = 0; i < codeBits; i++) {
                 if (word.get(i)) {
-                    encoded.set(rank * wordIndex + i);
+                    encoded.set(codeBits * wordIndex + i);
                 }
             }
         }
@@ -51,7 +50,7 @@ public final class LdpcEncoder {
 
     public static BitSet decode(Code code, BitSet encoded, int bitsLength) {
         int rank = code.getRank();
-        int blockCount = bitsLength / rank;
+        int blockCount = (int) ((double) bitsLength / (double) rank);
         List<BitSequence> encodedBlocks = new ArrayList<>();
         for (int blockIndex = 0; blockIndex < blockCount; blockIndex++) {
             BitSequence block = new BitSequence(rank);
@@ -75,10 +74,11 @@ public final class LdpcEncoder {
     }
 
     private static BitSet encodeBlock(BitSequence blockBits, Code code) {
-        Integer length = code.getLength();
-        Integer rank = code.getRank();
+        int informationBits = code.getLength();
+        int codeBits = code.getRank();
+        int checkBits = codeBits - informationBits;
 
-        Vector x = new Vector(length, true);
+        Vector x = new Vector(checkBits, true);
 
         Matrix H = code.getParityCheckMatrix();
         LUDecomposition generatorMatrix = code.getGeneratorMatrix();
@@ -87,8 +87,8 @@ public final class LdpcEncoder {
 
         // Multiply the vector of source bits by the systematic columns of the
         // parity check matrix, giving x. Also copy these bits to the coded block.
-        for (int j = length; j < rank; j++) {
-            if (blockBits.isSet(j - length)) {
+        for (int j = checkBits; j < codeBits; j++) {
+            if (blockBits.isSet(j - checkBits)) {
                 for (Element e = H.firstInColumn(columns.get(j)); e.bottom() != null; e = e.bottom()) {
                     int row = e.getRow();
                     if (x.isSet(row)) {
@@ -104,10 +104,10 @@ public final class LdpcEncoder {
         Vector y = forwardSubstitution(generatorMatrix, x);
         Vector z = backwardSubstitution(generatorMatrix, y);
 
-        BitSet wordBitSequence = new BitSet(rank);
+        BitSet wordBitSequence = new BitSet(codeBits);
 
-        for (int i = length; i < rank; i++) {
-            if (blockBits.isSet(i - length)) {
+        for (int i = checkBits; i < codeBits; i++) {
+            if (blockBits.isSet(i - checkBits)) {
                 z.set(columns.get(i));
             }
         }
@@ -117,12 +117,13 @@ public final class LdpcEncoder {
     }
 
     private static BitSequence decode(Code code, BitSequence codeWord) {
-        int M = code.getLength();
-        int N = code.getRank();
+        int informationBits = code.getLength();
+        int codeBits = code.getRank();
+        int checkBits = code.getRank() - code.getLength();
 
-        boolean[] dblk = new boolean[N];
-        double[] lratio = new double[N];
-        double[] bitpr = new double[N];
+        boolean[] dblk = new boolean[codeBits];
+        double[] lratio = new double[codeBits];
+        double[] bitpr = new double[codeBits];
 
         int iterations;        // Unsigned because can be huge for enum
         double changed;    // Double because can be fraction if lratio==1
@@ -132,7 +133,7 @@ public final class LdpcEncoder {
         List<Integer> columns = generatorMatrix.getColumns();
 
         // Find likelihood ratio for each bit
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < codeBits; i++) {
             lratio[i] = codeWord.isSet(i) ?
                     (1 - BSC_ERROR_PROBABILITY) / BSC_ERROR_PROBABILITY :
                     BSC_ERROR_PROBABILITY / (1 - BSC_ERROR_PROBABILITY);
@@ -146,13 +147,13 @@ public final class LdpcEncoder {
         boolean valid = check(parityCheckMatrix, dblk);
         System.out.println(valid ? "Block valid" : "Block is invalid");
 
-        changed = changed(lratio, dblk, N);
+        changed = changed(lratio, dblk, codeBits);
         System.out.println("Changed bits: " + changed);
 
-        BitSequence bitSequence = new BitSequence(N - M);
-        for (int i = M; i < N; i++) {
+        BitSequence bitSequence = new BitSequence(informationBits);
+        for (int i = checkBits; i < codeBits; i++) {
             if (dblk[columns.get(i)]) {
-                bitSequence.set(i - M);
+                bitSequence.set(i - checkBits);
             }
         }
         return bitSequence;

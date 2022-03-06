@@ -14,7 +14,7 @@ public final class FeaturesCalculator {
         BufferedImage hBuffer = cfd.getKey();
         BufferedImage vBuffer = cfd.getValue();
         List<Double> features = new ArrayList<>(length);
-        for (int i = 0; i < hBuffer.getWidth() * hBuffer.getWidth(); i++) {
+        for (int i = 0; i < length; i++) {
             int x = i % hBuffer.getWidth();
             int y = i / hBuffer.getWidth();
             int h = hBuffer.getRGB(x, y) & 0xFF;
@@ -102,7 +102,7 @@ public final class FeaturesCalculator {
         BufferedImage horD = convolve(grayScale, 0, sigma);
         BufferedImage verD = convolve(grayScale, 1, sigma);
 
-        int dim = (int) (Math.sqrt(length));
+        int dim = (int) Math.ceil(Math.sqrt(length));
         return new Pair<>(getScaledImage(horD, dim, dim), getScaledImage(verD, dim, dim));
     }
 
