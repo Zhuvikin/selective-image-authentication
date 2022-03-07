@@ -83,7 +83,7 @@ public final class SignatureProvider {
         int l = bsa.length - 0x01;
         byte[] bia = new byte[l];
         System.arraycopy(bsa, 0, bia, 0, l);
-        return new BigInteger(bia);
+        return new BigInteger(1, bia);
     }
 
 }

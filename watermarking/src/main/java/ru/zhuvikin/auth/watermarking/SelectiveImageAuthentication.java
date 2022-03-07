@@ -34,6 +34,10 @@ public final class SelectiveImageAuthentication {
         int blockLength = (int) Math.floor((double) capacity * eccCodeRate);
         int featuresLength = (int) Math.floor((double) (blockLength - privateKeyLength) / 3.0d);
 
+        if (featuresLength <= 0) {
+            throw new RuntimeException("LDPC rate is too small for given capacity and DS length");
+        }
+
         double sigma = parameters.getSigma();
         double delta = parameters.getDelta();
         double gamma = parameters.getGamma();
@@ -51,7 +55,6 @@ public final class SelectiveImageAuthentication {
         // Concatenate signature and 3-bit quantization perturbations
         List<Perturbation> perturbations = quantizedData.getPerturbation();
         BitSet data = new BitSet();
-        int dataLength = featuresLength * 3 + privateKeyLength;
         for (int i = 0; i < featuresLength; i++) {
             Perturbation perturbation = perturbations.get(i);
             if (perturbation.isBit0()) {
@@ -73,7 +76,7 @@ public final class SelectiveImageAuthentication {
 
         // Encode with LDPC-code
         Code code = CodeCache.of(blockLength, capacity);
-        BitSet encoded = LdpcEncoder.encode(code, data, dataLength);
+        BitSet encoded = LdpcEncoder.encode(code, data, blockLength);
 
         // Embed by means of Haar Wavelet Transform
         return StenographyEmbedding.embed(image, encoded, capacity, gamma);

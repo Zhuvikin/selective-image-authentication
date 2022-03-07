@@ -304,10 +304,8 @@ public class Modulo2Matrix implements Matrix {
         List<Integer> rowsInv = new ArrayList<>(rows);
         List<Integer> columnsInv = new ArrayList<>(columns);
 
-        int rowsAdded = 0;
-        long r = 0;
         for (int i = 0; i < subMatrixDimension; i++) {
-            System.out.println("Iteration of column " + i + " / " + subMatrixDimension);
+            System.out.println(100d * (double) i / (double) subMatrixDimension + " %");
             boolean found = false;
             Element e = null, first, next;
             int k;
@@ -358,7 +356,6 @@ public class Modulo2Matrix implements Matrix {
                     k = first.getRow();
                     if (rowsInv.get(k) > i && e != null) {
                         B.addRow(k, B, e.getRow());
-                        rowsAdded++;
                         left.set(i, k);
                     } else if (rowsInv.get(k) < i) {
                         upper.set(columns.get(i), rowsInv.get(k));
@@ -369,8 +366,6 @@ public class Modulo2Matrix implements Matrix {
                     first = next;
                 }
             }
-            System.out.println(i + ": block 2 finished");
-            System.out.println("Rows added: " + rowsAdded + " with " + (((double) r) / (rowsAdded * 1000.0)) + " ms. in average");
         }
 
         System.out.println("Remove not needed bits");

@@ -1,7 +1,6 @@
 package ru.zhuvikin.auth.watermarking;
 
 import lombok.SneakyThrows;
-import org.junit.Assert;
 import org.junit.Test;
 import ru.zhuvikin.auth.security.RsaKeys;
 
@@ -10,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 
+import static org.junit.Assert.assertTrue;
 import static ru.zhuvikin.auth.watermarking.TestUtility.saveJPEG;
 
 public class SelectiveImageAuthenticationTest {
@@ -22,12 +22,14 @@ public class SelectiveImageAuthenticationTest {
     private static final String ORIGINAL_NAME = "lena.jpg";
     private static final String WATERMARKED_NAME_1 = "lena_watermarked_1.jpg";
     private static final String WATERMARKED_NAME_2 = "lena_watermarked_2.jpg";
+    private static final String WATERMARKED_NAME_3 = "lena_watermarked_3.jpg";
 
     private static final ClassLoader CLASS_LOADER = SelectiveImageAuthenticationTest.class.getClassLoader();
 
     private static final URL LENA_URL = CLASS_LOADER.getResource(ORIGINAL_NAME);
     private static final URL LENA_WM1_URL = CLASS_LOADER.getResource(WATERMARKED_NAME_1);
     private static final URL LENA_WM2_URL = CLASS_LOADER.getResource(WATERMARKED_NAME_2);
+    private static final URL LENA_WM3_URL = CLASS_LOADER.getResource(WATERMARKED_NAME_3);
 
     private static final WatermarkingParameters WATERMARKING_PARAMETERS_1 = WatermarkingParameters.builder()
             .gamma(2)
@@ -35,6 +37,13 @@ public class SelectiveImageAuthenticationTest {
 
     private static final WatermarkingParameters WATERMARKING_PARAMETERS_2 = WatermarkingParameters.builder()
             .eccCodeRate(0.25)
+            .gamma(1.875)
+            .build();
+
+    private static final WatermarkingParameters WATERMARKING_PARAMETERS_3 = WatermarkingParameters.builder()
+            .eccCodeRate(0.75)
+            .sigma(20)
+            .delta(80)
             .gamma(2)
             .build();
 
@@ -57,7 +66,7 @@ public class SelectiveImageAuthenticationTest {
 
         boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_1, RSA_KEYS.getPublicKey());
 
-        Assert.assertTrue(authentic);
+        assertTrue(authentic);
     }
 
     @Test
@@ -79,7 +88,29 @@ public class SelectiveImageAuthenticationTest {
 
         boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_2, RSA_KEYS.getPublicKey());
 
-        Assert.assertTrue(authentic);
+        assertTrue(authentic);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testWatermark3() {
+        BufferedImage image = ImageIO.read(LENA_URL);
+
+        BufferedImage watermarked = SelectiveImageAuthentication
+                .watermark(image, WATERMARKING_PARAMETERS_3, RSA_KEYS.getPrivateKey());
+
+        File outputFile = new File(WATERMARKED_NAME_3);
+        saveJPEG(watermarked, outputFile, 1f);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testAuthenticate3() {
+        BufferedImage image = ImageIO.read(LENA_WM3_URL);
+
+        boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_3, RSA_KEYS.getPublicKey());
+
+        assertTrue(authentic);
     }
 
 }

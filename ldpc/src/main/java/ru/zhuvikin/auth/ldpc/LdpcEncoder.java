@@ -78,7 +78,7 @@ public final class LdpcEncoder {
         int codeBits = code.getRank();
         int checkBits = codeBits - informationBits;
 
-        Vector x = new Vector(checkBits, true);
+        Vector x = new Vector(informationBits, true);
 
         Matrix H = code.getParityCheckMatrix();
         LUDecomposition generatorMatrix = code.getGeneratorMatrix();

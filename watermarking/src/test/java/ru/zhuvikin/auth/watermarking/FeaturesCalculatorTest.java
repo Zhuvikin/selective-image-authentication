@@ -15,7 +15,7 @@ public class FeaturesCalculatorTest {
     private static final double SIGMA = 10;
 
     private static final String ORIGINAL_NAME = "lena.jpg";
-    private static final String WATERMARKED_NAME = "lena_watermarked.jpg";
+    private static final String WATERMARKED_NAME = "lena_watermarked_1.jpg";
 
     private static final ClassLoader CLASS_LOADER = FeaturesCalculatorTest.class.getClassLoader();
 
