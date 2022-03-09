@@ -1,6 +1,7 @@
 package ru.zhuvikin.auth.matrix;
 
 import org.junit.Test;
+import ru.zhuvikin.auth.matrix.sparse.GeneratorMatrixInfo;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
 import ru.zhuvikin.auth.matrix.sparse.Vector;
@@ -15,7 +16,7 @@ public class EquationSolverTest {
     private static final Matrix matrix = new Modulo2Matrix(7, 6)
             .set(3, 0).set(5, 0).set(6, 1).set(1, 1).set(0, 2).set(1, 3).set(2, 3).set(2, 4).set(0, 4).set(6, 5);
 
-    private static final LUDecomposition decomposition = matrix.decompose();
+    private static final GeneratorMatrixInfo decomposition = matrix.getGenerationMatrixInfo();
 
     @Test
     public void testForwardAnsBackwardSubstitutions() throws Exception {

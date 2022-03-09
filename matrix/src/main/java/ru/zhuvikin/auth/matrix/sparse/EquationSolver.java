@@ -5,9 +5,9 @@ import java.util.List;
 public final class EquationSolver {
 
     // Ly = x
-    public static Vector forwardSubstitution(LUDecomposition decomposition, Vector x) {
-        Matrix L = decomposition.getLeft();
-        List<Integer> rows = decomposition.getRows();
+    public static Vector forwardSubstitution(GeneratorMatrixInfo generatorMatrix, Vector x) {
+        Matrix L = generatorMatrix.getLuDecomposition().getLeft();
+        List<Integer> rows = generatorMatrix.getRows();
 
         Vector y = new Vector(x.size(), true);
 
@@ -60,9 +60,9 @@ public final class EquationSolver {
     }
 
     // Uz = y
-    public static Vector backwardSubstitution(LUDecomposition decomposition, Vector y) {
-        Matrix U = decomposition.getUpper();
-        List<Integer> columns = decomposition.getColumns();
+    public static Vector backwardSubstitution(GeneratorMatrixInfo generatorMatrix, Vector y) {
+        Matrix U = generatorMatrix.getLuDecomposition().getUpper();
+        List<Integer> columns = generatorMatrix.getColumns();
 
         Vector z = new Vector(U.getWidth(), true);
 

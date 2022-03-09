@@ -43,7 +43,7 @@ public class SelectiveImageAuthenticationTest {
     private static final WatermarkingParameters WATERMARKING_PARAMETERS_3 = WatermarkingParameters.builder()
             .eccCodeRate(0.75)
             .sigma(20)
-            .delta(80)
+            .delta(30)
             .gamma(2)
             .build();
 

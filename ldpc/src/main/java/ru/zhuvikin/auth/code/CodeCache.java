@@ -1,23 +1,23 @@
 package ru.zhuvikin.auth.code;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import ru.zhuvikin.auth.ldpc.ParityCheckMatrix;
+import ru.zhuvikin.auth.matrix.sparse.GeneratorMatrixInfo;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
 import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
@@ -30,76 +30,107 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 @AllArgsConstructor
 public class CodeCache {
 
-    private static final ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, Code>> CODES = new ConcurrentHashMap<>();
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, Matrix>> PARITY_CHECK_MATRICES = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, GeneratorMatrixInfo>> GENERATOR_MATRIX_INFO = new ConcurrentHashMap<>();
 
     private static final String LDPC_JAR = "ldpc.jar";
     private static final String CACHE_FOLDER_NAME = "cache";
     private static final String LDPC_FILE_PREFIX = "LDPC";
-    private static final String CODE_FILE_EXTENSION = "code";
+    private static final String PARITY_CHECK_MATRIX_FILE_EXTENSION = "pchk";
+    private static final String GENERATION_MATRIX_FILE_EXTENSION = "gen";
 
-    private static long seed = 1;
-
-    static {
-        loadCodeCaches();
-    }
+    private static long SEED = 1;
 
     public static Code of(int length, int rank) {
         return getCode(length, rank);
     }
 
-    private static void generateMatrices(Code code) {
-        code.setParityCheckMatrix(ParityCheckMatrix.generate(code.getRank(), code.getLength(), seed));
-        code.setGeneratorMatrix(code.getParityCheckMatrix().decompose());
-    }
+    private static Code getCode(int length, int rank) {
+        Code result = new Code(length, rank);
 
-    private static Code getCode(int blockLength, int rank) {
-        Code code;
-        if (CODES.containsKey(rank)) {
-            ConcurrentHashMap<Integer, Code> rateCodes = CODES.get(rank);
-            if (rateCodes.containsKey(blockLength)) {
-                code = rateCodes.get(blockLength);
+        if (PARITY_CHECK_MATRICES.containsKey(rank)) {
+            ConcurrentHashMap<Integer, Matrix> rankMatrices = PARITY_CHECK_MATRICES.get(rank);
+            if (rankMatrices.containsKey(length)) {
+                result.setParityCheckMatrix(rankMatrices.get(length));
             } else {
-                code = generateNewCode(blockLength, rank);
-                rateCodes.put(blockLength, code);
-                cacheCode(code);
+                return getParityCheckMatrixAndGetCode(length, rank, result);
             }
         } else {
-            code = generateNewCode(blockLength, rank);
-            CODES.put(rank, new ConcurrentHashMap<>());
-            CODES.get(rank).put(blockLength, code);
-            cacheCode(code);
+            return getParityCheckMatrixAndGetCode(length, rank, result);
         }
-        return code;
+
+        Matrix parityCheckMatrix = result.getParityCheckMatrix();
+        if (GENERATOR_MATRIX_INFO.containsKey(rank)) {
+            ConcurrentHashMap<Integer, GeneratorMatrixInfo> rankMatrices = GENERATOR_MATRIX_INFO.get(rank);
+            if (rankMatrices.containsKey(length)) {
+                result.setGeneratorMatrix(rankMatrices.get(length));
+                return result;
+            } else {
+                return getGenerationMatrixAndGetCode(result, parityCheckMatrix);
+            }
+        } else {
+            return getGenerationMatrixAndGetCode(result, parityCheckMatrix);
+        }
     }
 
-    static Code generateNewCode(int blockLength, int rank) {
-        Code result = new Code(blockLength, rank);
-        generateMatrices(result);
+    private static Code getParityCheckMatrixAndGetCode(int length, int rank, Code result) {
+        Matrix parityCheckMatrix = (Matrix) checkCache(length, rank, Matrix.class);
+        if (parityCheckMatrix == null) {
+            parityCheckMatrix = ParityCheckMatrix.generate(rank, length, SEED);
+            cacheParityCheckMatrix(parityCheckMatrix);
+        }
+        result.setParityCheckMatrix(parityCheckMatrix);
+        return getGenerationMatrixAndGetCode(result, parityCheckMatrix);
+    }
+
+    private static Code getGenerationMatrixAndGetCode(Code result, Matrix parityCheckMatrix) {
+        int height = parityCheckMatrix.getHeight();
+        int width = parityCheckMatrix.getWidth();
+        GeneratorMatrixInfo generatorMatrix = (GeneratorMatrixInfo) checkCache(height, width, GeneratorMatrixInfo.class);
+        if (generatorMatrix == null) {
+            generatorMatrix = parityCheckMatrix.getGenerationMatrixInfo();
+            cacheGeneratorMatrix(generatorMatrix);
+        }
+        result.setGeneratorMatrix(generatorMatrix);
         return result;
     }
 
     @SneakyThrows
-    private static void cacheCode(Code code) {
+    private static void cacheGeneratorMatrix(GeneratorMatrixInfo generatorMatrix) {
+        int width = generatorMatrix.getSourceWidth();
+        int height = generatorMatrix.getSourceHeight();
+
+        GENERATOR_MATRIX_INFO.putIfAbsent(width, new ConcurrentHashMap<>());
+        GENERATOR_MATRIX_INFO.get(width).putIfAbsent(height, generatorMatrix);
+
         String cacheFolder = checkCacheFolder();
 
-        String codeFileName = LDPC_FILE_PREFIX + "_" + code.getRank() + "_" + code.getLength() + "." + CODE_FILE_EXTENSION;
+        String codeFileName = LDPC_FILE_PREFIX + "_" + width + "_" + height + "." + GENERATION_MATRIX_FILE_EXTENSION;
         File codeFile = new File(cacheFolder + separator + codeFileName);
 
-        String contents = JSON_MAPPER.writeValueAsString(code);
-        if (!codeFile.createNewFile()) {
-            System.err.println("Failed to create code file in " + codeFile.getAbsolutePath());
-        }
-
-        FileWriter fw = new FileWriter(codeFile.getAbsoluteFile());
-        BufferedWriter bw = new BufferedWriter(fw);
-
-        bw.write(contents);
-        bw.close();
+        byte[] bytes = generatorMatrix.serialize();
+        Files.write(codeFile.toPath(), bytes, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
     }
 
     @SneakyThrows
-    private static void loadCodeCaches() {
+    private static void cacheParityCheckMatrix(Matrix parityCheckMatrix) {
+        int width = parityCheckMatrix.getWidth();
+        int height = parityCheckMatrix.getHeight();
+
+        PARITY_CHECK_MATRICES.putIfAbsent(width, new ConcurrentHashMap<>());
+        PARITY_CHECK_MATRICES.get(width).putIfAbsent(height, parityCheckMatrix);
+
+        String cacheFolder = checkCacheFolder();
+
+        String codeFileName = LDPC_FILE_PREFIX + "_" + parityCheckMatrix.getWidth() + "_" + parityCheckMatrix.getHeight() + "." + PARITY_CHECK_MATRIX_FILE_EXTENSION;
+        File codeFile = new File(cacheFolder + separator + codeFileName);
+
+        byte[] bytes = parityCheckMatrix.serialize();
+        Files.write(codeFile.toPath(), bytes, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+    }
+
+    @SneakyThrows
+    private static Serializable checkCache(int length, int rank, Class<? extends Serializable> clazz) {
         String cacheFolderPath = checkCacheFolder();
 
         ClassLoader classLoader = CodeCache.class.getClassLoader();
@@ -140,26 +171,27 @@ public class CodeCache {
         File[] files = cacheFolder.listFiles();
         if (files != null) {
             for (File file : files) {
-                if (file.isFile()) {
-                    String contents = new String(Files.readAllBytes(file.toPath()));
-                    Code code = JSON_MAPPER.readValue(contents, Code.class);
-                    CODES.putIfAbsent(code.getRank(), new ConcurrentHashMap<>());
-                    ConcurrentHashMap<Integer, Code> map = CODES.get(code.getRank());
-
-                    code.setParityCheckMatrix(restoreMatrix(code.getParityCheckMatrix()));
-                    code.getGeneratorMatrix().setLeft(restoreMatrix(code.getGeneratorMatrix().getLeft()));
-                    code.getGeneratorMatrix().setUpper(restoreMatrix(code.getGeneratorMatrix().getUpper()));
-
-                    map.putIfAbsent(code.getLength(), code);
+                String name = LDPC_FILE_PREFIX + "_" + rank + "_" + length + ".";
+                if (clazz.equals(Matrix.class)) {
+                    name += PARITY_CHECK_MATRIX_FILE_EXTENSION;
+                } else if (clazz.equals(GeneratorMatrixInfo.class)) {
+                    name += GENERATION_MATRIX_FILE_EXTENSION;
+                } else {
+                    throw new IllegalArgumentException("Failed to check cache of class " + clazz);
+                }
+                if (file.getName().equals(name)) {
+                    if (file.isFile()) {
+                        byte[] bytes = Files.readAllBytes(file.toPath());
+                        if (clazz.equals(Matrix.class)) {
+                            return Modulo2Matrix.deserialize(bytes);
+                        } else if (clazz.equals(GeneratorMatrixInfo.class)) {
+                            return GeneratorMatrixInfo.deserialize(bytes);
+                        }
+                    }
                 }
             }
         }
-    }
-
-    private static Matrix restoreMatrix(Matrix matrix) {
-        Matrix matrixRestored = new Modulo2Matrix(matrix.getWidth(), matrix.getHeight());
-        matrix.getColumns().values().forEach(c -> c.values().forEach(e -> matrixRestored.set(e.getColumn(), e.getRow())));
-        return matrixRestored;
+        return null;
     }
 
     private static String checkCacheFolder() {

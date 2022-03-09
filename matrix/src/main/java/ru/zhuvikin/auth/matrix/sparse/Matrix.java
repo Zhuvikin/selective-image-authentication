@@ -2,10 +2,11 @@ package ru.zhuvikin.auth.matrix.sparse;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.io.Serializable;
 import java.util.NavigableMap;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public interface Matrix {
+public interface Matrix extends Serializable {
 
     int getWidth();
 
@@ -45,8 +46,12 @@ public interface Matrix {
 
     NavigableMap<Integer, Element> columnEntries(int column);
 
+    GeneratorMatrixInfo getGenerationMatrixInfo();
+
     LUDecomposition decompose();
 
     Matrix clone();
+
+    byte[] serialize();
 
 }

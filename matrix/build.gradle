@@ -1,5 +1,7 @@
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.16.18'
 
+    compile 'com.google.guava:guava:23.5-jre'
+
     testCompile 'junit:junit:4.12'
 }

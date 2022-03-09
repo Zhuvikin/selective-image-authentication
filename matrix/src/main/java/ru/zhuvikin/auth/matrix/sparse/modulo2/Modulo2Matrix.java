@@ -3,8 +3,10 @@ package ru.zhuvikin.auth.matrix.sparse.modulo2;
 import lombok.Getter;
 import lombok.Setter;
 import ru.zhuvikin.auth.matrix.sparse.Element;
+import ru.zhuvikin.auth.matrix.sparse.GeneratorMatrixInfo;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
+import ru.zhuvikin.auth.matrix.sparse.MatrixUtility;
 import ru.zhuvikin.auth.matrix.sparse.Vector;
 
 import java.util.ArrayList;
@@ -290,7 +292,7 @@ public class Modulo2Matrix implements Matrix {
     }
 
     @Override
-    public LUDecomposition decompose() {
+    public GeneratorMatrixInfo getGenerationMatrixInfo() {
         System.out.println("Start matrix LU decomposition");
         int subMatrixDimension = width < height ? width : height;
 
@@ -380,7 +382,13 @@ public class Modulo2Matrix implements Matrix {
         }
 
         System.out.println("LU decomposition is finished");
-        return new LUDecomposition(width, height, rows, columns, left, upper);
+        LUDecomposition luDecomposition = new LUDecomposition(left, upper);
+        return new GeneratorMatrixInfo(luDecomposition, width, height, rows, columns);
+    }
+
+    @Override
+    public LUDecomposition decompose() {
+        return getGenerationMatrixInfo().getLuDecomposition();
     }
 
     private void setElement(int column, int row) {
@@ -402,6 +410,15 @@ public class Modulo2Matrix implements Matrix {
             }
         }
         return result;
+    }
+
+    @Override
+    public byte[] serialize() {
+        return MatrixUtility.serialize(this);
+    }
+
+    public static Matrix deserialize(byte[] bytes) {
+        return MatrixUtility.deserialize(bytes);
     }
 
     @Override

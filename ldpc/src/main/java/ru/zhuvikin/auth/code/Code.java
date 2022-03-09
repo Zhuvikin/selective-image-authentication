@@ -3,7 +3,7 @@ package ru.zhuvikin.auth.code;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
+import ru.zhuvikin.auth.matrix.sparse.GeneratorMatrixInfo;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
 
 @Getter
@@ -16,7 +16,7 @@ public class Code {
     @Setter
     private Matrix parityCheckMatrix;
     @Setter
-    private LUDecomposition generatorMatrix;
+    private GeneratorMatrixInfo generatorMatrix;
 
     public Code() {
     }

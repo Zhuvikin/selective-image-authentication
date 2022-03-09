@@ -23,7 +23,7 @@ public class FeaturesCalculatorTest {
     private static final URL LENA_WM_URL = CLASS_LOADER.getResource(WATERMARKED_NAME);
 
     @Test
-    public void features() throws Exception {
+    public void testFeatures1() throws Exception {
         BufferedImage image = ImageIO.read(LENA_URL);
 
         List<Double> features1 = FeaturesCalculator.features(image, SIGMA, LENGTH);

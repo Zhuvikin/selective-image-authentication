@@ -2,6 +2,7 @@ package ru.zhuvikin.auth.ldpc;
 
 import ru.zhuvikin.auth.code.Code;
 import ru.zhuvikin.auth.matrix.sparse.Element;
+import ru.zhuvikin.auth.matrix.sparse.GeneratorMatrixInfo;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
 import ru.zhuvikin.auth.matrix.sparse.Vector;
@@ -81,7 +82,7 @@ public final class LdpcEncoder {
         Vector x = new Vector(informationBits, true);
 
         Matrix H = code.getParityCheckMatrix();
-        LUDecomposition generatorMatrix = code.getGeneratorMatrix();
+        GeneratorMatrixInfo generatorMatrix = code.getGeneratorMatrix();
 
         List<Integer> columns = generatorMatrix.getColumns();
 
@@ -129,7 +130,7 @@ public final class LdpcEncoder {
         double changed;    // Double because can be fraction if lratio==1
 
         Matrix parityCheckMatrix = code.getParityCheckMatrix();
-        LUDecomposition generatorMatrix = code.getGeneratorMatrix();
+        GeneratorMatrixInfo generatorMatrix = code.getGeneratorMatrix();
         List<Integer> columns = generatorMatrix.getColumns();
 
         // Find likelihood ratio for each bit
