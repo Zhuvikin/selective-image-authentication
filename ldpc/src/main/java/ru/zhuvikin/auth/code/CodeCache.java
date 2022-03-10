@@ -41,22 +41,18 @@ public class CodeCache {
 
     private static long SEED = 1;
 
-    public static Code of(int length, int rank) {
-        return getCode(length, rank);
-    }
-
-    private static Code getCode(int length, int rank) {
-        Code result = new Code(length, rank);
+    static Code getCode(int rank, int length) {
+        Code result = new Code(rank, length);
 
         if (PARITY_CHECK_MATRICES.containsKey(rank)) {
             ConcurrentHashMap<Integer, Matrix> rankMatrices = PARITY_CHECK_MATRICES.get(rank);
             if (rankMatrices.containsKey(length)) {
                 result.setParityCheckMatrix(rankMatrices.get(length));
             } else {
-                return getParityCheckMatrixAndGetCode(length, rank, result);
+                return getParityCheckMatrixAndGetCode(rank, length, result);
             }
         } else {
-            return getParityCheckMatrixAndGetCode(length, rank, result);
+            return getParityCheckMatrixAndGetCode(rank, length, result);
         }
 
         Matrix parityCheckMatrix = result.getParityCheckMatrix();
@@ -73,8 +69,8 @@ public class CodeCache {
         }
     }
 
-    private static Code getParityCheckMatrixAndGetCode(int length, int rank, Code result) {
-        Matrix parityCheckMatrix = (Matrix) checkCache(length, rank, Matrix.class);
+    private static Code getParityCheckMatrixAndGetCode(int rank, int length, Code result) {
+        Matrix parityCheckMatrix = (Matrix) checkCache(rank, length, Matrix.class);
         if (parityCheckMatrix == null) {
             parityCheckMatrix = ParityCheckMatrix.generate(rank, length, SEED);
             cacheParityCheckMatrix(parityCheckMatrix);
@@ -84,9 +80,9 @@ public class CodeCache {
     }
 
     private static Code getGenerationMatrixAndGetCode(Code result, Matrix parityCheckMatrix) {
-        int height = parityCheckMatrix.getHeight();
-        int width = parityCheckMatrix.getWidth();
-        GeneratorMatrixInfo generatorMatrix = (GeneratorMatrixInfo) checkCache(height, width, GeneratorMatrixInfo.class);
+        int length = parityCheckMatrix.getHeight();
+        int rank = parityCheckMatrix.getWidth();
+        GeneratorMatrixInfo generatorMatrix = (GeneratorMatrixInfo) checkCache(rank, length, GeneratorMatrixInfo.class);
         if (generatorMatrix == null) {
             generatorMatrix = parityCheckMatrix.getGenerationMatrixInfo();
             cacheGeneratorMatrix(generatorMatrix);
@@ -125,12 +121,12 @@ public class CodeCache {
         String codeFileName = LDPC_FILE_PREFIX + "_" + parityCheckMatrix.getWidth() + "_" + parityCheckMatrix.getHeight() + "." + PARITY_CHECK_MATRIX_FILE_EXTENSION;
         File codeFile = new File(cacheFolder + separator + codeFileName);
 
-        byte[] bytes = parityCheckMatrix.serialize();
+        byte[] bytes = parityCheckMatrix.serializeAsParityCheckMatrix();
         Files.write(codeFile.toPath(), bytes, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
     }
 
     @SneakyThrows
-    private static Serializable checkCache(int length, int rank, Class<? extends Serializable> clazz) {
+    private static Serializable checkCache(int rank, int length, Class<? extends Serializable> clazz) {
         String cacheFolderPath = checkCacheFolder();
 
         ClassLoader classLoader = CodeCache.class.getClassLoader();
@@ -183,7 +179,7 @@ public class CodeCache {
                     if (file.isFile()) {
                         byte[] bytes = Files.readAllBytes(file.toPath());
                         if (clazz.equals(Matrix.class)) {
-                            return Modulo2Matrix.deserialize(bytes);
+                            return Modulo2Matrix.deserializeAsParityCheckMatrix(bytes);
                         } else if (clazz.equals(GeneratorMatrixInfo.class)) {
                             return GeneratorMatrixInfo.deserialize(bytes);
                         }

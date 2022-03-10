@@ -10,8 +10,8 @@ import ru.zhuvikin.auth.matrix.sparse.Matrix;
 @EqualsAndHashCode
 public class Code {
 
-    private int length;
     private int rank;
+    private int length;
 
     @Setter
     private Matrix parityCheckMatrix;
@@ -21,14 +21,18 @@ public class Code {
     public Code() {
     }
 
-    Code(int length, int rank) {
+    Code(int rank, int length) {
         this.length = length;
         this.rank = rank;
     }
 
+    public static Code of(int rank, int length) {
+        return CodeCache.getCode(rank, length);
+    }
+
     @Override
     public String toString() {
-        return "LDPC {" + length + ", " + rank + '}';
+        return "LDPC {" + rank + ", " + length + '}';
     }
 
 }

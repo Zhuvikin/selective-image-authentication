@@ -3,17 +3,14 @@ package ru.zhuvikin.auth.ldpc;
 import ru.zhuvikin.auth.code.Code;
 import ru.zhuvikin.auth.matrix.sparse.Element;
 import ru.zhuvikin.auth.matrix.sparse.GeneratorMatrixInfo;
-import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
 import ru.zhuvikin.auth.matrix.sparse.Matrix;
 import ru.zhuvikin.auth.matrix.sparse.Vector;
 import ru.zhuvikin.auth.matrix.sparse.modulo2.BitSequence;
-import ru.zhuvikin.auth.matrix.sparse.modulo2.Modulo2Matrix;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import static ru.zhuvikin.auth.ldpc.ParityCheckMatrix.generate;
 import static ru.zhuvikin.auth.matrix.sparse.EquationSolver.backwardSubstitution;
 import static ru.zhuvikin.auth.matrix.sparse.EquationSolver.forwardSubstitution;
 
@@ -23,10 +20,10 @@ public final class LdpcEncoder {
 
     private static final double BSC_ERROR_PROBABILITY = 0.1d;
 
-    public static BitSet encode(Code code, BitSet messageBits, int bitsLength) {
-        int informationBits = code.getLength();
-        int codeBits = code.getRank();
-        int words = (int) Math.ceil((double) bitsLength / (double) informationBits);
+    public static BitSet encode(Code code, BitSet messageBits, int informationBits) {
+        int checkBits = code.getLength();
+        int rank = code.getRank();
+        int words = (int) Math.ceil((double) informationBits / (double) (rank - checkBits));
         int bits = words * informationBits;
 
         BitSequence bitSet = new BitSequence(bits);
@@ -40,9 +37,9 @@ public final class LdpcEncoder {
         for (int wordIndex = 0; wordIndex < words; wordIndex++) {
             BitSequence blockBits = bitSet.subSequence(wordIndex * informationBits, (wordIndex + 1) * informationBits);
             BitSet word = encodeBlock(blockBits, code);
-            for (int i = 0; i < codeBits; i++) {
+            for (int i = 0; i < rank; i++) {
                 if (word.get(i)) {
-                    encoded.set(codeBits * wordIndex + i);
+                    encoded.set(rank * wordIndex + i);
                 }
             }
         }
@@ -75,11 +72,10 @@ public final class LdpcEncoder {
     }
 
     private static BitSet encodeBlock(BitSequence blockBits, Code code) {
-        int informationBits = code.getLength();
         int codeBits = code.getRank();
-        int checkBits = codeBits - informationBits;
+        int checkBits = code.getLength();
 
-        Vector x = new Vector(informationBits, true);
+        Vector x = new Vector(checkBits, true);
 
         Matrix H = code.getParityCheckMatrix();
         GeneratorMatrixInfo generatorMatrix = code.getGeneratorMatrix();
@@ -118,9 +114,9 @@ public final class LdpcEncoder {
     }
 
     private static BitSequence decode(Code code, BitSequence codeWord) {
-        int informationBits = code.getLength();
+        int informationBits = code.getRank() - code.getLength();
         int codeBits = code.getRank();
-        int checkBits = code.getRank() - code.getLength();
+        int checkBits = code.getLength();
 
         boolean[] dblk = new boolean[codeBits];
         double[] lratio = new double[codeBits];

@@ -32,7 +32,8 @@ public class SelectiveImageAuthenticationTest {
     private static final URL LENA_WM3_URL = CLASS_LOADER.getResource(WATERMARKED_NAME_3);
 
     private static final WatermarkingParameters WATERMARKING_PARAMETERS_1 = WatermarkingParameters.builder()
-            .gamma(2)
+            .eccCodeRate(0.5)
+            .gamma(1.55)
             .build();
 
     private static final WatermarkingParameters WATERMARKING_PARAMETERS_2 = WatermarkingParameters.builder()
@@ -42,9 +43,7 @@ public class SelectiveImageAuthenticationTest {
 
     private static final WatermarkingParameters WATERMARKING_PARAMETERS_3 = WatermarkingParameters.builder()
             .eccCodeRate(0.75)
-            .sigma(20)
-            .delta(30)
-            .gamma(2)
+            .gamma(1.25)
             .build();
 
     @Test

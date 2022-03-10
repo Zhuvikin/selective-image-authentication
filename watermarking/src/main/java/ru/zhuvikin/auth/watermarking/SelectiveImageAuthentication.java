@@ -1,7 +1,6 @@
 package ru.zhuvikin.auth.watermarking;
 
 import ru.zhuvikin.auth.code.Code;
-import ru.zhuvikin.auth.code.CodeCache;
 import ru.zhuvikin.auth.ldpc.LdpcEncoder;
 import ru.zhuvikin.auth.security.RsaKeys;
 import ru.zhuvikin.auth.security.SignatureProvider;
@@ -31,8 +30,8 @@ public final class SelectiveImageAuthentication {
         int capacity = domainCapacity * 2;
 
         double eccCodeRate = parameters.getEccCodeRate();
-        int blockLength = (int) Math.floor((double) capacity * eccCodeRate);
-        int featuresLength = (int) Math.floor((double) (blockLength - privateKeyLength) / 3.0d);
+        int informationBits = capacity - (int) Math.floor((double) capacity * eccCodeRate);
+        int featuresLength = (int) Math.floor((double) (informationBits - privateKeyLength) / 3.0d);
 
         if (featuresLength <= 0) {
             throw new RuntimeException("LDPC rate is too small for given capacity and DS length");
@@ -75,8 +74,8 @@ public final class SelectiveImageAuthentication {
         }
 
         // Encode with LDPC-code
-        Code code = CodeCache.of(blockLength, capacity);
-        BitSet encoded = LdpcEncoder.encode(code, data, blockLength);
+        Code code = Code.of(capacity, capacity - informationBits);
+        BitSet encoded = LdpcEncoder.encode(code, data, informationBits);
 
         // Embed by means of Haar Wavelet Transform
         return StenographyEmbedding.embed(image, encoded, capacity, gamma);
@@ -95,8 +94,8 @@ public final class SelectiveImageAuthentication {
         int capacity = domainCapacity * 2;
 
         double eccCodeRate = parameters.getEccCodeRate();
-        int blockLength = (int) Math.floor((double) capacity * eccCodeRate);
-        int featuresLength = (int) Math.floor((double) (blockLength - publicKeyLength) / 3.0d);
+        int informationBits = capacity - (int) Math.floor((double) capacity * eccCodeRate);
+        int featuresLength = (int) Math.floor((double) (informationBits - publicKeyLength) / 3.0d);
 
         double sigma = parameters.getSigma();
         double delta = parameters.getDelta();
@@ -106,7 +105,7 @@ public final class SelectiveImageAuthentication {
         BitSet extracted = StenographyEmbedding.extract(image, capacity, gamma);
 
         // 2. Decode with LDPC-code
-        Code code = CodeCache.of(blockLength, capacity);
+        Code code = Code.of(capacity, capacity - informationBits);
         BitSet decoded = LdpcEncoder.decode(code, extracted, capacity);
 
         // 3. Separate signature and 3-bit quantization perturbations

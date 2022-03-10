@@ -15,24 +15,20 @@ public final class ParityCheckMatrix {
     private final static int MAX_ELIMINATING_PASSES = 10;
     private final static int CHECKS_IN_COLUMN = 3;
 
-    static Matrix generate(int length, int rank) {
-        return generate(length, rank, new Random().nextLong());
-    }
-
-    public static Matrix generate(int length, int rank, Long seed) {
+    public static Matrix generate(int rank, int length, Long seed) {
         Random random = new Random(seed);
 
-        Matrix result = new Modulo2Matrix(length, rank);
+        Matrix result = new Modulo2Matrix(rank, length);
 
-        int totalCheckBits = CHECKS_IN_COLUMN * length;
+        int totalCheckBits = CHECKS_IN_COLUMN * rank;
 
         List<Integer> u = IntStream.range(0, totalCheckBits)
-                .map(i -> i % rank)
+                .map(i -> i % length)
                 .boxed()
                 .collect(Collectors.toList());
 
         int iteration = 0;
-        for (int x = 0; x < length; x++) {
+        for (int x = 0; x < rank; x++) {
             List<Integer> columnIndicies = new ArrayList<>();
             for (int found = 0; found < CHECKS_IN_COLUMN; found++) {
                 int y = iteration;
@@ -59,11 +55,10 @@ public final class ParityCheckMatrix {
         // Add extra bits to avoid rows with less than two checks.
         int needed = 2;
         final int[] added = {0};
-        IntStream.range(0, rank).parallel().filter(y -> result.getRows().get(y).size() < needed)
+        IntStream.range(0, length).parallel().filter(y -> result.getRows().get(y).size() < needed)
                 .forEach(y -> {
-                    System.out.println("y = " + y);
                     while (result.getRows().get(y).size() < needed) {
-                        result.set(random.nextInt(rank), y);
+                        result.set(random.nextInt(length), y);
                         added[0]++;
                     }
                 });
@@ -75,7 +70,7 @@ public final class ParityCheckMatrix {
         // Remove 4-length cycles
         for (int iter = 0; iter < MAX_ELIMINATING_PASSES; iter++) {
             int found = 0;
-            for (int x = 0; x < length; x++) {
+            for (int x = 0; x < rank; x++) {
                 boolean d = false;
                 for (Element e1 = result.firstInColumn(x); !d && e1.bottom() != null; e1 = e1.bottom()) {
                     for (Element e2 = result.firstInRow(e1.getRow()); !d && e2.right() != null; e2 = e2.right()) {
@@ -90,7 +85,7 @@ public final class ParityCheckMatrix {
                                 if (e4.getColumn() == x) {
                                     int y;
                                     do {
-                                        y = random.nextInt(rank);
+                                        y = random.nextInt(length);
                                     } while (result.isSet(x, y));
                                     result.remove(e1.getColumn(), e1.getRow());
                                     result.set(x, y);

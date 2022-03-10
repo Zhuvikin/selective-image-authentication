@@ -27,9 +27,7 @@ public class GenerationMatrixInfoSerializationTest {
     @Test
     public void deserialize() throws Exception {
         byte[] bytes = Files.readAllBytes(Paths.get(CLASS_LOADER.getResource("generation-matrix-info").toURI()));
-
-        GeneratorMatrixInfo deserialized = GeneratorMatrixInfo.deserialize(bytes);
-        // assertEquals(matrix, deserialized);
+        GeneratorMatrixInfo.deserialize(bytes);
     }
 
 }

@@ -54,4 +54,6 @@ public interface Matrix extends Serializable {
 
     byte[] serialize();
 
+    byte[] serializeAsParityCheckMatrix();
+
 }

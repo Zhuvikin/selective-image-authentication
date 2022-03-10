@@ -1,7 +1,10 @@
 package ru.zhuvikin.auth.matrix.sparse.modulo2;
 
+import com.google.common.io.LittleEndianDataInputStream;
+import com.google.common.io.LittleEndianDataOutputStream;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import ru.zhuvikin.auth.matrix.sparse.Element;
 import ru.zhuvikin.auth.matrix.sparse.GeneratorMatrixInfo;
 import ru.zhuvikin.auth.matrix.sparse.LUDecomposition;
@@ -9,6 +12,8 @@ import ru.zhuvikin.auth.matrix.sparse.Matrix;
 import ru.zhuvikin.auth.matrix.sparse.MatrixUtility;
 import ru.zhuvikin.auth.matrix.sparse.Vector;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +47,19 @@ public class Modulo2Matrix implements Matrix {
         this.rows = rows;
     }
 
+    public static Matrix deserialize(byte[] bytes) {
+        return MatrixUtility.deserialize(bytes);
+    }
+
+    @SneakyThrows
+    public static Matrix deserializeAsParityCheckMatrix(byte[] bytes) {
+        LittleEndianDataInputStream stream = new LittleEndianDataInputStream(new ByteArrayInputStream(bytes));
+        int p = stream.readInt();
+        if (p != ('P' << 8) + 0x80) {
+            throw new IllegalStateException("Failed to read parity-check matrix");
+        }
+        return MatrixUtility.deserialize(stream);
+    }
 
     private void checkBounds(int column, int row) {
         checkColumnIndex(column, this);
@@ -417,8 +435,14 @@ public class Modulo2Matrix implements Matrix {
         return MatrixUtility.serialize(this);
     }
 
-    public static Matrix deserialize(byte[] bytes) {
-        return MatrixUtility.deserialize(bytes);
+    @Override
+    @SneakyThrows
+    public byte[] serializeAsParityCheckMatrix() {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(bos);
+        stream.writeInt(('P' << 8) + 0x80);
+        stream.write(serialize());
+        return bos.toByteArray();
     }
 
     @Override
