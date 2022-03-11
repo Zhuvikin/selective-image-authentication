@@ -1,4 +1,4 @@
-rootProject.name = 'authentication'
+rootProject.name  = 'authentication'
 
 include 'three-bit-quantization'
 include 'watermarking'
