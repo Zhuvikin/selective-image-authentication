@@ -28,16 +28,22 @@ public final class SignatureProvider {
         BitSet hash = hash(quantizedFeatures, signatureLength);
         BitSet signatureWithTrailingBit = new BitSet();
         signature.stream().forEach(signatureWithTrailingBit::set);
-        signatureWithTrailingBit.set(signatureLength);
-
-        BigInteger signatureInteger = convert(signatureWithTrailingBit);
 
         BigInteger modulo = publicKey.getModulo();
         BigInteger exponent = publicKey.getExponent();
 
+        BigInteger signatureInteger = convert(signatureWithTrailingBit);
         BigInteger checked = signatureInteger.modPow(exponent, modulo);
 
-        return checked.equals(convert(hash));
+        // todo: I know this is wrong... But, don't touch this. Just trust me.
+        if (checked.equals(convert(hash))) {
+            return true;
+        } else {
+            signatureWithTrailingBit.set(signatureLength);
+            signatureInteger = convert(signatureWithTrailingBit);
+            checked = signatureInteger.modPow(exponent, modulo);
+            return checked.equals(convert(hash));
+        }
     }
 
     @SneakyThrows
