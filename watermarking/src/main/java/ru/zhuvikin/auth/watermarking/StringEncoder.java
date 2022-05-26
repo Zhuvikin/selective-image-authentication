@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public final class StringEncoder {
+final class StringEncoder {
 
     private final static List<String> alphabet = Arrays.asList("\0", "А", "Б", "В", "Г", "Д", "Е", "Ё", "Ж", "З", "И",
             "Й", "К", "Л", "М", "Н", "О", "П", "Р", "С", "Т", "У", "Ф", "Х", "Ц", "Ч", "Ш", "Щ", "Ъ", "Ы", "Ь", "Э",
             "Ю", "Я", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S",
             "T", "U", "V", "W", "X", "Y", "Z", ".", " ", "-");
 
-    private static int bitsPerSymbol = (int) Math.ceil(Math.log10((double) alphabet.size()) / Math.log10(2.0d));
+    static int BITS_PER_SYMBOL = (int) Math.ceil(Math.log10((double) alphabet.size()) / Math.log10(2.0d));
 
     private static Map<Integer, String> codeToCharacterMap = new HashMap<>();
     private static Map<String, Integer> characterToCodeMap = new HashMap<>();
@@ -27,7 +27,7 @@ public final class StringEncoder {
         }
     }
 
-    public static BitSet encode(String input, int maximumLength) {
+    static BitSet encode(String input, int maximumLength) {
         if (input == null || Objects.equals(input, "")) {
             return new BitSet();
         }
@@ -52,7 +52,7 @@ public final class StringEncoder {
         StringBuilder binaryString = new StringBuilder();
         for (Integer symbol : symbols) {
             StringBuilder s = new StringBuilder(Integer.toBinaryString(symbol));
-            int p = bitsPerSymbol;
+            int p = BITS_PER_SYMBOL;
             int g = 0, j = s.length();
             while (g < p - j) {
                 g++;
@@ -71,12 +71,12 @@ public final class StringEncoder {
         return result;
     }
 
-    public static String decode(BitSet input, int length) {
+    static String decode(BitSet input, int length) {
         List<String> binaryStrings = new ArrayList<>();
         String binaryString = "";
-        for (int i = 0; i < length * bitsPerSymbol; i++) {
+        for (int i = 0; i < length * BITS_PER_SYMBOL; i++) {
             binaryString += input.get(i) ? "1" : "0";
-            if ((i + 1) % bitsPerSymbol == 0 && i > 0) {
+            if ((i + 1) % BITS_PER_SYMBOL == 0 && i > 0) {
                 binaryStrings.add(binaryString);
                 binaryString = "";
             }

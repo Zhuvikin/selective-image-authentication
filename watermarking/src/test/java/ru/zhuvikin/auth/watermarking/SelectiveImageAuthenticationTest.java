@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static ru.zhuvikin.auth.watermarking.TestUtility.saveJPEG;
 
@@ -69,7 +70,7 @@ public class SelectiveImageAuthenticationTest {
     public void testAuthenticate1() {
         BufferedImage image = ImageIO.read(LENA_WM1_URL);
 
-        boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_1, RSA_KEYS.getPublicKey());
+        boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_1, RSA_KEYS.getPublicKey()).isAuthentic();
 
         assertTrue(authentic);
     }
@@ -91,7 +92,7 @@ public class SelectiveImageAuthenticationTest {
     public void testAuthenticate2() {
         BufferedImage image = ImageIO.read(LENA_WM2_URL);
 
-        boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_2, RSA_KEYS.getPublicKey());
+        boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_2, RSA_KEYS.getPublicKey()).isAuthentic();
 
         assertTrue(authentic);
     }
@@ -113,7 +114,7 @@ public class SelectiveImageAuthenticationTest {
     public void testAuthenticate3() {
         BufferedImage image = ImageIO.read(LENA_WM3_URL);
 
-        boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_3, RSA_KEYS.getPublicKey());
+        boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_3, RSA_KEYS.getPublicKey()).isAuthentic();
 
         assertTrue(authentic);
     }
@@ -135,9 +136,25 @@ public class SelectiveImageAuthenticationTest {
     public void testAuthenticate4() {
         BufferedImage image = ImageIO.read(LENA_WM256_URL);
 
-        boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_1, RSA_KEYS_512.getPublicKey());
+        boolean authentic = SelectiveImageAuthentication.authenticate(image, WATERMARKING_PARAMETERS_1, RSA_KEYS_512.getPublicKey()).isAuthentic();
 
         assertTrue(authentic);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testWatermarkAndAuthenticationWithName() {
+        BufferedImage image = ImageIO.read(LENA_URL);
+
+        String name = "Щукин Язь-Сомъ Акулович";
+        BufferedImage watermarked = SelectiveImageAuthentication
+                .watermark(name, image, WATERMARKING_PARAMETERS_1, RSA_KEYS.getPrivateKey());
+
+        AuthenticationResult authentication = SelectiveImageAuthentication
+                .authenticate(watermarked, WATERMARKING_PARAMETERS_1, RSA_KEYS.getPublicKey());
+
+        assertTrue(authentication.isAuthentic());
+        assertEquals(name.toUpperCase(), authentication.getName());
     }
 
 }

@@ -106,7 +106,7 @@ public class SelectiveAuthentication {
         }
 
         if (authentication) {
-            boolean authentic = SelectiveImageAuthentication.authenticate(image, parameters, rsaKeys.getPublicKey());
+            boolean authentic = SelectiveImageAuthentication.authenticate(image, parameters, rsaKeys.getPublicKey()).isAuthentic();
             System.out.println("The image is " + (authentic ? "authentic" : "fake"));
         } else {
             BufferedImage watermarked = SelectiveImageAuthentication.watermark(null, image, parameters, rsaKeys.getPrivateKey());

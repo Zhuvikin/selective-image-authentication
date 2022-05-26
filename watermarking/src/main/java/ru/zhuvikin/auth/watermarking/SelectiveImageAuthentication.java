@@ -34,7 +34,9 @@ public final class SelectiveImageAuthentication {
 
         double eccCodeRate = parameters.getEccCodeRate();
         int informationBits = capacity - (int) Math.floor((double) capacity * eccCodeRate);
-        int featuresLength = (int) Math.floor((double) (informationBits - privateKeyLength) / 3.0d);
+        int maximumNameLength = parameters.getMaximumNameLength();
+        int nameBitsCount = maximumNameLength * StringEncoder.BITS_PER_SYMBOL;
+        int featuresLength = (int) Math.floor((double) (informationBits - nameBitsCount - privateKeyLength) / 3.0d);
 
         if (featuresLength <= 0) {
             throw new RuntimeException("LDPC rate is too small for given capacity and DS length");
@@ -54,7 +56,7 @@ public final class SelectiveImageAuthentication {
         List<Integer> quantizedFeatures = quantizedData.getQuantizedFeatures();
         BitSet signature = SignatureProvider.sign(quantizedFeatures, privateKey);
 
-        // Concatenate signature and 3-bit quantization perturbations
+        // Concatenate 3-bit quantization perturbations, name and signature
         List<Perturbation> perturbations = quantizedData.getPerturbation();
         BitSet data = new BitSet();
         for (int i = 0; i < featuresLength; i++) {
@@ -70,9 +72,16 @@ public final class SelectiveImageAuthentication {
             }
         }
 
+        BitSet nameData = StringEncoder.encode(name, maximumNameLength);
+        for (int i = 0; i < nameBitsCount; i++) {
+            if (nameData.get(i)) {
+                data.set(featuresLength * 3 + i);
+            }
+        }
+
         for (int i = 0; i < privateKeyLength; i++) {
             if (signature.get(i)) {
-                data.set(featuresLength * 3 + i);
+                data.set(featuresLength * 3 + nameBitsCount + i);
             }
         }
 
@@ -84,7 +93,7 @@ public final class SelectiveImageAuthentication {
         return StenographyEmbedding.embed(image, encoded, capacity, gamma);
     }
 
-    public static boolean authenticate(BufferedImage image,
+    public static AuthenticationResult authenticate(BufferedImage image,
                                        WatermarkingParameters parameters,
                                        RsaKeys.PublicKey publicKey) {
         int width = image.getWidth();
@@ -100,22 +109,24 @@ public final class SelectiveImageAuthentication {
 
         double eccCodeRate = parameters.getEccCodeRate();
         int informationBits = capacity - (int) Math.floor((double) capacity * eccCodeRate);
-        int featuresLength = (int) Math.floor((double) (informationBits - publicKeyLength) / 3.0d);
+        int maximumNameLength = parameters.getMaximumNameLength();
+        int nameBitsCount = maximumNameLength * StringEncoder.BITS_PER_SYMBOL;
+        int featuresLength = (int) Math.floor((double) (informationBits - nameBitsCount - publicKeyLength) / 3.0d);
 
         double sigma = parameters.getSigma();
         double delta = parameters.getDelta();
         double gamma = parameters.getGamma();
 
-        // 1. Extract by means of Haar Wavelet Transform
+        // Extract by means of Haar Wavelet Transform
         BitSet extracted = StenographyEmbedding.extract(image, capacity, gamma);
 
-        // 2. Decode with LDPC-code
+        // Decode with LDPC-code
         Code code = Code.of(capacity, capacity - informationBits);
         BitSet decoded = LdpcEncoder.decode(code, extracted, capacity);
 
-        // 3. Separate signature and 3-bit quantization perturbations
+        // Separate signature and 3-bit quantization perturbations
         List<Perturbation> perturbations = new ArrayList<>();
-        BitSet extractedSignature = new BitSet();
+
         for (int i = 0; i < featuresLength; i++) {
             Perturbation perturbation = new Perturbation();
             if (decoded.get(i * 3)) {
@@ -130,20 +141,34 @@ public final class SelectiveImageAuthentication {
             perturbations.add(perturbation);
         }
 
-        for (int i = 0; i < publicKeyLength; i++) {
+        BitSet extractedName = new BitSet();
+        for (int i = 0; i < nameBitsCount; i++) {
             if (decoded.get(featuresLength * 3 + i)) {
+                extractedName.set(i);
+            }
+        }
+
+        String name = StringEncoder.decode(extractedName, maximumNameLength);
+
+        BitSet extractedSignature = new BitSet();
+        for (int i = 0; i < publicKeyLength; i++) {
+            if (decoded.get(featuresLength * 3 + nameBitsCount + i)) {
                 extractedSignature.set(i);
             }
         }
 
-        // 4. Get features of authenticating image
+        // Get features of authenticating image
         List<Double> features = FeaturesCalculator.features(image, sigma, featuresLength);
 
-        // 5. Restore feature vector with 3-bit quantization
+        // Restore feature vector with 3-bit quantization
         List<Integer> restoredFeatures = ThreeBitQuantization.restoreFeatures(features, perturbations, delta);
 
-        // 6. Verify signature
-        return SignatureProvider.verify(restoredFeatures, publicKey, extractedSignature);
+        // Verify signature
+        boolean authentic = SignatureProvider.verify(restoredFeatures, publicKey, extractedSignature);
+        return AuthenticationResult.builder()
+                .authentic(authentic)
+                .name(name)
+                .build();
     }
 
 }
