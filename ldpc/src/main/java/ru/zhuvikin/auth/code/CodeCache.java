@@ -148,7 +148,12 @@ public class CodeCache {
         } else {
             File jarFile = new File(CodeCache.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
             String actualFile = jarFile.getParentFile().getAbsolutePath() + separator + LDPC_JAR;
-            final JarFile jar = new JarFile(actualFile);
+            JarFile jar;
+            try {
+                jar = new JarFile(actualFile);
+            } catch (Exception e) {
+                jar = new JarFile(jarFile);
+            }
             final Enumeration<JarEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
                 JarEntry jarEntry = entries.nextElement();
