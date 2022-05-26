@@ -17,7 +17,10 @@ import static ru.zhuvikin.auth.watermarking.StenographyEmbedding.HWT_LEVELS;
 
 public final class SelectiveImageAuthentication {
 
-    public static BufferedImage watermark(BufferedImage image, WatermarkingParameters parameters, RsaKeys.PrivateKey privateKey) {
+    public static BufferedImage watermark(String name,
+                                          BufferedImage image,
+                                          WatermarkingParameters parameters,
+                                          RsaKeys.PrivateKey privateKey) {
         int width = image.getWidth();
         int height = image.getHeight();
         if (width != height) {
@@ -81,7 +84,9 @@ public final class SelectiveImageAuthentication {
         return StenographyEmbedding.embed(image, encoded, capacity, gamma);
     }
 
-    public static boolean authenticate(BufferedImage image, WatermarkingParameters parameters, RsaKeys.PublicKey publicKey) {
+    public static boolean authenticate(BufferedImage image,
+                                       WatermarkingParameters parameters,
+                                       RsaKeys.PublicKey publicKey) {
         int width = image.getWidth();
         int height = image.getHeight();
         if (width != height) {

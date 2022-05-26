@@ -21,4 +21,7 @@ public class WatermarkingParameters {
     @Builder.Default
     private double delta = 10;
 
+    @Builder.Default
+    private int maximumNameLength = 32;
+
 }

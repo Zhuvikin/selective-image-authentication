@@ -109,7 +109,7 @@ public class SelectiveAuthentication {
             boolean authentic = SelectiveImageAuthentication.authenticate(image, parameters, rsaKeys.getPublicKey());
             System.out.println("The image is " + (authentic ? "authentic" : "fake"));
         } else {
-            BufferedImage watermarked = SelectiveImageAuthentication.watermark(image, parameters, rsaKeys.getPrivateKey());
+            BufferedImage watermarked = SelectiveImageAuthentication.watermark(null, image, parameters, rsaKeys.getPrivateKey());
             saveJPEG(watermarked, new File(output), 1.0f);
             System.out.println("Watermarked image is saved under path " + output);
         }

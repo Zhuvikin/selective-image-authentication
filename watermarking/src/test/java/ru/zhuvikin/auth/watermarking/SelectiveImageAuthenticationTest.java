@@ -58,7 +58,7 @@ public class SelectiveImageAuthenticationTest {
         BufferedImage image = ImageIO.read(LENA_URL);
 
         BufferedImage watermarked = SelectiveImageAuthentication
-                .watermark(image, WATERMARKING_PARAMETERS_1, RSA_KEYS.getPrivateKey());
+                .watermark(null, image, WATERMARKING_PARAMETERS_1, RSA_KEYS.getPrivateKey());
 
         File outputFile = new File(WATERMARKED_NAME_1);
         saveJPEG(watermarked, outputFile, 1f);
@@ -80,7 +80,7 @@ public class SelectiveImageAuthenticationTest {
         BufferedImage image = ImageIO.read(LENA_URL);
 
         BufferedImage watermarked = SelectiveImageAuthentication
-                .watermark(image, WATERMARKING_PARAMETERS_2, RSA_KEYS.getPrivateKey());
+                .watermark(null, image, WATERMARKING_PARAMETERS_2, RSA_KEYS.getPrivateKey());
 
         File outputFile = new File(WATERMARKED_NAME_2);
         saveJPEG(watermarked, outputFile, 1f);
@@ -102,7 +102,7 @@ public class SelectiveImageAuthenticationTest {
         BufferedImage image = ImageIO.read(LENA_URL);
 
         BufferedImage watermarked = SelectiveImageAuthentication
-                .watermark(image, WATERMARKING_PARAMETERS_3, RSA_KEYS.getPrivateKey());
+                .watermark(null, image, WATERMARKING_PARAMETERS_3, RSA_KEYS.getPrivateKey());
 
         File outputFile = new File(WATERMARKED_NAME_3);
         saveJPEG(watermarked, outputFile, 1f);
@@ -124,7 +124,7 @@ public class SelectiveImageAuthenticationTest {
         BufferedImage image = ImageIO.read(LENA_256_URL);
 
         BufferedImage watermarked = SelectiveImageAuthentication
-                .watermark(image, WATERMARKING_PARAMETERS_1, RSA_KEYS_512.getPrivateKey());
+                .watermark(null, image, WATERMARKING_PARAMETERS_1, RSA_KEYS_512.getPrivateKey());
 
         File outputFile = new File(WATERMARKED_NAME_256);
         saveJPEG(watermarked, outputFile, 1f);
