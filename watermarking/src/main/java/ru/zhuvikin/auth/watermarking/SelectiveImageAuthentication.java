@@ -165,10 +165,15 @@ public final class SelectiveImageAuthentication {
 
         // Verify signature
         boolean authentic = SignatureProvider.verify(restoredFeatures, publicKey, extractedSignature);
-        return AuthenticationResult.builder()
+
+        AuthenticationResult authenticationResult = AuthenticationResult.builder()
                 .authentic(authentic)
-                .name(name)
                 .build();
+
+        if (authentic) {
+            authenticationResult.setName(name);
+        }
+        return authenticationResult;
     }
 
 }
