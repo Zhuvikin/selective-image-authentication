@@ -148,8 +148,6 @@ public final class SelectiveImageAuthentication {
             }
         }
 
-        String name = StringEncoder.decode(extractedName, maximumNameLength);
-
         BitSet extractedSignature = new BitSet();
         for (int i = 0; i < publicKeyLength; i++) {
             if (decoded.get(featuresLength * 3 + nameBitsCount + i)) {
@@ -171,6 +169,7 @@ public final class SelectiveImageAuthentication {
                 .build();
 
         if (authentic) {
+            String name = StringEncoder.decode(extractedName, maximumNameLength);
             authenticationResult.setName(name);
         }
         return authenticationResult;
