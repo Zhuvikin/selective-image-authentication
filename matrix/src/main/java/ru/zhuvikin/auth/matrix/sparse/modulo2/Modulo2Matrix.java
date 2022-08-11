@@ -325,7 +325,7 @@ public class Modulo2Matrix implements Matrix {
         List<Integer> columnsInv = new ArrayList<>(columns);
 
         for (int i = 0; i < subMatrixDimension; i++) {
-            System.out.println(100d * (double) i / (double) subMatrixDimension + " %");
+//            System.out.println(100d * (double) i / (double) subMatrixDimension + " %");
             boolean found = false;
             Element e = null, first, next;
             int k;

@@ -31,7 +31,7 @@ public class SignatureProviderTest {
     }
 
     @Test
-    public void testSign() throws Exception {
+    public void testSign() {
 
         BitSet signature = sign(FEATURES, RSA_KEYS.getPrivateKey());
 
@@ -43,7 +43,7 @@ public class SignatureProviderTest {
     }
 
     @Test
-    public void testVerify1() throws Exception {
+    public void testVerify1() {
         BitSet signature = sign(FEATURES, RSA_KEYS.getPrivateKey());
 
         boolean authentic = verify(FEATURES, RSA_KEYS.getPublicKey(), signature);
@@ -52,7 +52,7 @@ public class SignatureProviderTest {
     }
 
     @Test
-    public void testVerify2() throws Exception {
+    public void testVerify2() {
         BitSet signature = sign(FEATURES, RSA_KEYS_1024.getPrivateKey());
 
         boolean authentic = verify(FEATURES, RSA_KEYS_1024.getPublicKey(), signature);
