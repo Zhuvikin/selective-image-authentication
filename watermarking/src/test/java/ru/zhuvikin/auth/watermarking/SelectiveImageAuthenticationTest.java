@@ -1,17 +1,13 @@
 package ru.zhuvikin.auth.watermarking;
 
-import lombok.SneakyThrows;
 import org.junit.Test;
 import ru.zhuvikin.auth.security.RsaKeys;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static ru.zhuvikin.auth.watermarking.TestUtility.saveJPEG;
+import static ru.zhuvikin.auth.watermarking.TestUtility.testImageWatermarkingAndAuthentication;
 
 public class SelectiveImageAuthenticationTest {
 
@@ -94,27 +90,6 @@ public class SelectiveImageAuthenticationTest {
 
         assertTrue(result.isAuthentic());
         assertEquals(name.toUpperCase(), result.getName());
-    }
-
-    @SneakyThrows
-    private static AuthenticationResult testImageWatermarkingAndAuthentication(
-            URL sourceImage, WatermarkingParameters parameters, RsaKeys rsaKeys, String watermarkedName, String username) {
-        BufferedImage image = ImageIO.read(sourceImage);
-
-        BufferedImage watermarked = SelectiveImageAuthentication
-                .watermark(username, image, parameters, rsaKeys.getPrivateKey());
-
-        File outputFile = new File(watermarkedName);
-        saveJPEG(watermarked, outputFile, 1f);
-
-        BufferedImage watermarkedImage = ImageIO.read(outputFile);
-
-        return SelectiveImageAuthentication.authenticate(watermarkedImage, parameters, rsaKeys.getPublicKey());
-    }
-
-    private static AuthenticationResult testImageWatermarkingAndAuthentication(
-            URL sourceImage, WatermarkingParameters parameters, RsaKeys rsaKeys, String watermarkedName) {
-        return testImageWatermarkingAndAuthentication(sourceImage, parameters, rsaKeys, watermarkedName, null);
     }
 
 }
